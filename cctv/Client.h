@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "common/log/Logger.h"
+
 namespace cctv
 {
 	typedef struct host {
@@ -20,6 +22,8 @@ namespace cctv
 		void Close();
 
 	private:
+		static logger::Logger logger;
+
 		std::string& mHost;
 		int mPort;
 		int mSocketFd;

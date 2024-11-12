@@ -7,6 +7,8 @@
 
 namespace cctv
 {
+	logger::Logger Client::logger("Client");
+
 	Client::Client(std::string& host, int port)
 		: mHost(host)
 		, mPort(port)
@@ -36,31 +38,31 @@ namespace cctv
 	*/
 	void Client::connectToServer()
 	{
-		std::cout << "클라이언트 시작" << std::endl;
+		logger.Info("connectToServer() start");
 
 		// 소켓 생성
 		mSocketFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (mSocketFd < 0)
 		{
-			std::cerr << "소켓 생성 실패" << std::endl;
+			logger.Error("socket() fail");
 			return;
 		}
-		std::cout << "소켓 생성 성공" << std::endl;
+		logger.Info("socket() success");
 
 		// 서버 주소 설정
 		sockaddr_in server_addr = { 0, };
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_port = htons(mPort); // htons(port)는 호스트 바이트 순서(Host Byte Order)를 네트워크 바이트 순서(Network Byte Order)로 바꿔주는 함수. 바이트 순서가 호스트와 네트워크 간에 다를 수 있으므로, 네트워크에서 사용할 수 있도록 포트를 변환.
 		inet_pton(AF_INET, mHost.c_str(), &server_addr.sin_addr);
-		std::cout << "서버 주소 설정 성공" << std::endl;
+		logger.Info("sockaddr_in structure setting success");
 
 		// 서버에 연결
 		if (connect(mSocketFd, (sockaddr*)&server_addr, sizeof(server_addr)) < 0)
 		{
-			std::cerr << "서버 연결 실패" << std::endl;
+			logger.Error("connect() fail");
 			return;
 		}
-		std::cout << "서버 연결 성공" << std::endl;
+		logger.Info("connect() success");
 	}
 
 	void Client::Close()
@@ -71,9 +73,8 @@ namespace cctv
 		}
 
 		mbClosed = true;
-		std::cout << "클라이언트 연결 종료" << std::endl;
-
 		close(mSocketFd);
+		logger.Info("close(socketFd)");
 	}
 
 	void Client::receiveFrameAndSaveToFile()
@@ -85,7 +86,7 @@ namespace cctv
 		FILE* file = fopen(filePath.c_str(), "ab");
 		if (!file)
 		{
-			std::cerr << "Failed to open output file." << std::endl;
+			logger.Error("Failed to open output file");
 			return;
 		}
 
@@ -98,13 +99,13 @@ namespace cctv
 				{
 					continue; // 인터럽트 발생 시 재시도
 				}
-				perror("recv");
+				logger.Error("recv() fail");
 				break;
 			}
 			else if (bytesReceived == 0)
 			{
 				// 서버가 연결을 종료함
-				printf("Connection closed by server.\n");
+				logger.Info("Connection closed by server");
 				break;
 			}
 
