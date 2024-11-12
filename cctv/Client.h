@@ -5,6 +5,11 @@
 
 namespace cctv
 {
+	typedef struct host {
+		std::string ip;
+		int port;
+	} host_t;
+
 	class Client
 	{
 	public:
