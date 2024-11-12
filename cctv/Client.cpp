@@ -52,6 +52,7 @@ namespace cctv
 		server_addr.sin_family = AF_INET;
 		server_addr.sin_port = htons(mPort); // htons(port)는 호스트 바이트 순서(Host Byte Order)를 네트워크 바이트 순서(Network Byte Order)로 바꿔주는 함수. 바이트 순서가 호스트와 네트워크 간에 다를 수 있으므로, 네트워크에서 사용할 수 있도록 포트를 변환.
 		inet_pton(AF_INET, mHost.c_str(), &server_addr.sin_addr);
+		std::cout << "서버 주소 설정 성공" << std::endl;
 
 		// 서버에 연결
 		if (connect(mSocketFd, (sockaddr*)&server_addr, sizeof(server_addr)) < 0)
@@ -80,7 +81,8 @@ namespace cctv
 		char frameBuffer[Frame::FRAME_SIZE];
 		int totalBytesReceived = 0;
 
-		FILE* file = fopen(mHost.c_str(), "ab");
+		std::string filePath = "storage/" + mHost;
+		FILE* file = fopen(filePath.c_str(), "ab");
 		if (!file)
 		{
 			std::cerr << "Failed to open output file." << std::endl;
