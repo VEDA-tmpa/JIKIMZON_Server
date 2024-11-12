@@ -1,6 +1,7 @@
-#include <cstdlib>
-#include <iostream>
 #include "server.h"
+#include <iostream>
+#include <thread>
+#include <vector>
 
 int main()
 {
@@ -11,8 +12,11 @@ int main()
     server.start();
     std::cout << "서버가 포트 " << port << "에서 실행 중입니다." << std::endl;
 
-    // 간단한 대기 루프 (데이터 전송 테스트)
+    // 클라이언트 연결 수락
     std::cout << "서버가 클라이언트의 연결을 대기 중입니다..." << std::endl;
+
+    // 클라이언트가 연결되기 전에 데이터 전송을 시도하지 않도록 설정
+    std::this_thread::sleep_for(std::chrono::seconds(5)); // 클라이언트 연결을 기다리기 위한 대기 시간
 
     // 테스트로 GUI 쪽으로 데이터 보내기
     std::vector<char> sampleData = { 'H', 'e', 'l', 'l', 'o', ' ', 'G', 'U', 'I' };
