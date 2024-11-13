@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <iostream>
-#include "server.h"
+#include "Server.h"
 
 int main()
 {
@@ -10,13 +10,13 @@ int main()
 
     viewer::Server server(port);
 
-    server.start();
+    server.Start();
     std::cout << "서버가 포트 " << port << "에서 실행 중입니다." << std::endl;
 
     std::vector<char> sampleData = { 'H', 'e', 'l', 'l', 'o', ' ', 'G', 'U', 'I' };
-    server.sendData(sampleData);  
+    server.SendData(sampleData);  
 
-    server.stop();
+    server.Stop();
     std::cout << "서버가 중단되었습니다." << std::endl;
 
     return EXIT_SUCCESS;

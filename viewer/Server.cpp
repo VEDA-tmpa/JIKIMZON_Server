@@ -1,4 +1,4 @@
-#include "server.h"
+#include "Server.h"
 #include <iostream>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -7,7 +7,7 @@
 namespace viewer
 {
 	Server::Server(int port)
-		: mPort(port), mServerFd(-1), mClientFd(-1), mIsRunning(false)
+		: mPort(port), mServerFd(-1), mClientFd(-1), mbIsRunning(false)
 	{
 		mServerFd = socket(AF_INET, SOCK_STREAM, 0);
 		if (mServerFd == 0)
@@ -37,16 +37,16 @@ namespace viewer
 
 	Server::~Server()
 	{
-		stop();
+		Stop();
 	}
 
-	void Server::start()
+	void Server::Start()
 	{
-		mIsRunning = true;
+		mbIsRunning = true;
 		acceptConnection();
 	}
 
-	void Server::stop()
+	void Server::Stop()
 	{
 		if (mClientFd > 0)
 		{
@@ -56,7 +56,7 @@ namespace viewer
 		{
 			close(mServerFd);
 		}
-		mIsRunning = false;
+		mbIsRunning = false;
 		std::cout << "서버 중단됨" << std::endl;
 	}
 
@@ -74,7 +74,7 @@ namespace viewer
 		std::cout << "GUI 클라이언트 연결 수락" << std::endl;
 	}
 
-	void Server::sendData(const std::vector<char>& data)
+	void Server::SendData(const std::vector<char>& data)
 	{
 		if (mClientFd < 0)
 		{
