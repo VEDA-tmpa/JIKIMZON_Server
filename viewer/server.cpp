@@ -4,43 +4,35 @@
 #include <sys/socket.h>
 #include <vector>
 
-using namespace std;
-
 namespace viewer
 {
-	/*
-	생성자
-	서버 소켓 생성, 지정된 포트에서 GUI 쪽 client 연결 대기를 초기화
-	*/
 	Server::Server(int port)
 		: mPort(port), mServerFd(-1), mClientFd(-1), mIsRunning(false)
 	{
 		mServerFd = socket(AF_INET, SOCK_STREAM, 0);
-		if(mServerFd == 0)
+		if (mServerFd == 0)
 		{
-			cout << "소켓 생성 실패" << endl;
+			std::cerr << "소켓 생성 실패" << std::endl;
 			exit(EXIT_FAILURE);
 		}
-		// 서버 주소 정보 set
+
 		mAddress.sin_family = AF_INET;
-		mAddress.sin_addr.s_addr = INADDR_ANY;	// 모든 인터페이스에서 연결 허용
-		mAddress.sin_port = htons(mPort);		// 포트 번호 설정
-	
-		// 소켓 바인드
-		if(bind(mServerFd, (struct sockaddr *)&mAddress, sizeof(mAddress)) < 0)
+		mAddress.sin_addr.s_addr = INADDR_ANY;
+		mAddress.sin_port = htons(mPort);  // 외부에서 받은 포트 번호로 설정
+
+		if (bind(mServerFd, (struct sockaddr *)&mAddress, sizeof(mAddress)) < 0)
 		{
-			cout << "바인딩 실패" << endl;
+			std::cerr << "바인딩 실패" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
-		// listen(최대 3개 허용)
-		if(listen(mServerFd, 3) < 0)
+		if (listen(mServerFd, 3) < 0)
 		{
-			cout << "리스닝 실패" << endl;
+			std::cerr << "리스닝 실패" << std::endl;
 			exit(EXIT_FAILURE);
 		}
 
-		cout << "서버가 포트 " << mPort << "에서 대기 중" << endl;
+		std::cout << "서버가 포트 " << mPort << "에서 대기 중" << std::endl;
 	}
 
 	Server::~Server()
@@ -56,44 +48,43 @@ namespace viewer
 
 	void Server::stop()
 	{
-		if(mClientFd > 0)
+		if (mClientFd > 0)
 		{
 			close(mClientFd);
 		}
-		if(mServerFd > 0)
+		if (mServerFd > 0)
 		{
 			close(mServerFd);
 		}
 		mIsRunning = false;
-		cout << "서버 중단됨" << endl;
+		std::cout << "서버 중단됨" << std::endl;
 	}
 
-	// GUI 연결 대기 및 수락
 	void Server::acceptConnection()
 	{
 		socklen_t addrlen = sizeof(mAddress);
 
 		mClientFd = accept(mServerFd, (struct sockaddr *)&mAddress, &addrlen);
-		if(mClientFd < 0)
+		if (mClientFd < 0)
 		{
-			cout << "클라이언트 연결 실패" << endl;
+			std::cerr << "클라이언트 연결 실패" << std::endl;
 			return;
 		}
 
-		cout << "GUI 클라이언트 연결 수락" << endl;
+		std::cout << "GUI 클라이언트 연결 수락" << std::endl;
 	}
 
 	void Server::sendData(const std::vector<char>& data)
 	{
-		if(mClientFd < 0)
+		if (mClientFd < 0)
 		{
-			cerr << "GUI 클라이언트 연결 안됨" << endl;
+			std::cerr << "GUI 클라이언트 연결 안됨" << std::endl;
 			return;
 		}
 
-		if(send(mClientFd, data.data(), data.size(), 0) < 0)
+		if (send(mClientFd, data.data(), data.size(), 0) < 0)
 		{
-			cout << "데이터 전송 실패" << endl;
+			std::cerr << "데이터 전송 실패" << std::endl;
 		}
 	}
 }
