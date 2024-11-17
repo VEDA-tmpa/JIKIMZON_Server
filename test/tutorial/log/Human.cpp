@@ -4,7 +4,8 @@
 
 namespace test_logger
 {
-	logger::Logger Human::logger("Human");
+	// logger::Logger Human::logger("Human");
+	logger::Logger Human::logger("Human", "storage/log.txt");
 
 	Human::Human(std::string name)
 		: mName(name)
