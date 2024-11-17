@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "common/log/Logger.h"
+#include "Logger.h"
 
 namespace cctv
 {
