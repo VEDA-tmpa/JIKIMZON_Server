@@ -1,5 +1,5 @@
 # 프로젝트 루트 디렉토리 변수 설정
-PROJECT_ROOT := $(shell pwd)
+PROJECT_ROOT := $(shell cd .. && pwd)
 
 # Include path에 PROJECT_ROOT 추가
 INCLUDES := -I$(PROJECT_ROOT) -DPROJECT_ROOT=\"$(PROJECT_ROOT)\"
@@ -10,7 +10,7 @@ CXXFLAGS := -std=c++17
 
 # 소스 파일과 타겟 설정
 SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
-		   $(PROJECT_ROOT)/main.cpp \
+		   $(PROJECT_ROOT)/cctv/main.cpp \
            $(PROJECT_ROOT)/cctv/Client.cpp
 
 TARGET := main.out
