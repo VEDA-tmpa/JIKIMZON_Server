@@ -19,7 +19,7 @@ namespace logger
 	class Logger 
 	{
 	public:
-		Logger(const string& className);
+		Logger(const string& className, const std::string& logFilePath = "storage/log.txt");
 		~Logger();
 
 		void Info(const string& message);
