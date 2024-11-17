@@ -10,13 +10,16 @@ using namespace std;
 
 namespace logger
 {
-	Logger::Logger(const string& className)
+	Logger::Logger(const string& className, const std::string& logFilePath)
 		: mClassName(className) 
 	{
-		// Makefile에서 PROJECT_ROOT가 정의
-        string logFilePath = string(PROJECT_ROOT) + "/storage/log.txt";
-        mLogFile.open(logFilePath, ios_base::app);
-		if (mLogFile.is_open() == false) {
+		std::string path = logFilePath;
+#if defined (PROJECT_ROOT)
+		path = std::string(PROJECT_ROOT) + "/" + logFilePath;
+#endif
+		mLogFile.open(path, std::ios_base::app);			
+		if (mLogFile.is_open() == false) 
+		{
 			cerr << "Error opening log file" << endl;
 		}
 	}
