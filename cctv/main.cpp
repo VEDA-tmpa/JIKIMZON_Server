@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "cctv/Client.h"
-#include "test/fixture/fixture.cpp"
+#include "test/fixture/Fixture.cpp"
 
 int main(void)
 {
