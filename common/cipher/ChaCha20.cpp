@@ -1,17 +1,17 @@
 #include <openssl/evp.h>
 
-#include "Cipher.h"
+#include "ChaCha20.h"
 
 namespace cipher
 {
-	Cipher::Cipher(std::vector<uint8_t> key)
+	ChaCha20::ChaCha20(std::vector<uint8_t> key)
 		: mKey(key)
 	{
 	}
 
-	void Cipher::Chacha20_encrypt_decrypt(std::vector<uint8_t> nonce, 
-										  const std::vector<uint8_t>& input, 
-										  std::vector<uint8_t>& output)
+	void ChaCha20::EncryptDecrypt(std::vector<uint8_t> nonce, 
+								  const std::vector<uint8_t>& input, 
+								  std::vector<uint8_t>& output)
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (!ctx) 

@@ -10,7 +10,7 @@ TARGET = a.out
 
 # Source files
 SRCS := $(PROJECT_ROOT)/test/tutorial/cipher/chacha20_example.cpp \
-        $(PROJECT_ROOT)/common/cipher/Cipher.cpp
+        $(PROJECT_ROOT)/common/cipher/ChaCha20.cpp
 
 # Default target
 all: $(TARGET)
