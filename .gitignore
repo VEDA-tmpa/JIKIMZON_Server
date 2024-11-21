@@ -1,3 +1,6 @@
 .vscode/
 
 *.out
+
+/storage/cipher/*.log
+/storage/cipher/*.bin
