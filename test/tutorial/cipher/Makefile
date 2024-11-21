@@ -1,23 +1,33 @@
-# 컴파일러와 플래그
+PROJECT_ROOT := $(shell cd ../../.. && pwd)
+
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++11 $(shell pkg-config --cflags openssl)
+CXXFLAGS = -std=c++11 $(shell pkg-config --cflags openssl) -I$(PROJECT_ROOT)
 LDFLAGS = $(shell pkg-config --libs openssl)
 
-# 대상 파일
+# Target binary
 TARGET = a.out
-SRC = chacha20_example.cpp
 
-# 기본 빌드 대상
+# Source files
+SRCS := $(PROJECT_ROOT)/test/tutorial/cipher/chacha20_example.cpp \
+        $(PROJECT_ROOT)/common/cipher/Cipher.cpp
+
+# Default target
 all: $(TARGET)
 
-# 프로그램 빌드 규칙
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
+# Build target
+$(TARGET):
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET) $(LDFLAGS)
 
-# 정리 규칙
+# Clean build artifacts
 clean:
 	rm -f $(TARGET)
 
-# 편리한 디버그 규칙
-debug: CXXFLAGS += -g
-debug: clean $(TARGET)
+# Run the program
+run: $(TARGET)
+	./$(TARGET)
+
+# Debug target to print project paths
+debug:
+	@echo "Project root: $(PROJECT_ROOT)"
+	@echo "Source files: $(SRCS)"
