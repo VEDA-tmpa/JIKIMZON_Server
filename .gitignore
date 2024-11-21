@@ -4,3 +4,5 @@
 
 /storage/cipher/*.log
 /storage/cipher/*.bin
+
+/viewer/*.bin

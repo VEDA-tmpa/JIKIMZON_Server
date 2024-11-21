@@ -5,6 +5,7 @@
 #include "viewer/Server.h"
 #include "common/frame/Frame.h"
 #include "test/fixture/Fixture.h"
+#include "common/cipher/ChaCha20.h"
 
 namespace viewer
 {
@@ -83,6 +84,11 @@ namespace viewer
 	{
 		logger.Info("streaming start");
 
+		std::vector<uint8_t> key = cipher::ChaCha20::LoadKeyFromFile( std::string(PROJECT_ROOT) + "/viewer/keyfile.bin");
+        std::vector<uint8_t> nonce(12, 0x00); // Replace with secure random nonce
+		cipher::ChaCha20 chacha20Handler(key);
+
+
 		const std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + fixture::cctv1.ip;
 		logger.Info(filePath);
 
@@ -95,6 +101,7 @@ namespace viewer
 
 
 		char frameBuffer[cctv::Frame::FRAME_SIZE];
+		char encrpytFrameBuffer[cctv::Frame::FRAME_SIZE];
 		long lastFileSize = 0; // 마지막 읽은 위치 추적 변수
 
 		while (true)
@@ -127,6 +134,9 @@ namespace viewer
 					size_t bytesRead = fread(frameBuffer, sizeof(char), cctv::Frame::FRAME_SIZE, file);
 					if (bytesRead == cctv::Frame::FRAME_SIZE) 
 					{
+
+						chacha20Handler.EncryptDecrypt(nonce, frameBuffer, encrpytFrameBuffer);
+
 						int bytesSent = send(socketFd, frameBuffer, cctv::Frame::FRAME_SIZE, 0);
 						if (bytesSent <= 0) 
 						{
