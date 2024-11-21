@@ -1,4 +1,5 @@
 #include <openssl/evp.h>
+#include <fstream>
 
 #include "ChaCha20.h"
 
@@ -7,7 +8,29 @@ namespace cipher
 	ChaCha20::ChaCha20(std::vector<uint8_t> key)
 		: mKey(key)
 	{
+		if (key.size() != 32)
+		{
+			throw std::invalid_argument("Key must be 32 bytes for ChaCha20");
+		}
 	}
+
+	std::vector<uint8_t> ChaCha20::LoadKeyFromFile(const std::string& filePath) 
+	{
+        std::ifstream file(filePath, std::ios::binary);
+        if (file.is_open() == false) 
+		{
+            throw std::runtime_error("Failed to open key file: " + filePath);
+        }
+
+        std::vector<uint8_t> key((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        if (key.size() != 32) {
+            throw std::runtime_error("Key file must contain exactly 32 bytes for ChaCha20");
+        }
+
+        return key;
+    }
 
 	void ChaCha20::EncryptDecrypt(std::vector<uint8_t> nonce, 
 								  const std::vector<uint8_t>& input, 

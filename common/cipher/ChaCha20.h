@@ -13,6 +13,8 @@ namespace cipher
 		ChaCha20(std::vector<uint8_t> key);
 		~ChaCha20() = default;
 
+        static std::vector<uint8_t> LoadKeyFromFile(const std::string& filePath);
+
 		void EncryptDecrypt(std::vector<uint8_t> nonce, 
 							const std::vector<uint8_t>& input, 
 							std::vector<uint8_t>& output);
