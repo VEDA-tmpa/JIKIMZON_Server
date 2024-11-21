@@ -82,7 +82,8 @@ namespace cctv
 		char frameBuffer[Frame::FRAME_SIZE];
 		int totalBytesReceived = 0;
 
-		std::string filePath = "storage/" + mHost;
+		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost;
+		logger.Info("filePath: " + filePath);
 		FILE* file = fopen(filePath.c_str(), "ab");
 		if (!file)
 		{
@@ -91,7 +92,7 @@ namespace cctv
 		}
 
 		while (true)
-		{
+		{	
 	        int bytesReceived = recv(mSocketFd, frameBuffer + totalBytesReceived, Frame::FRAME_SIZE - totalBytesReceived, 0);
 			if (bytesReceived < 0)
 			{
