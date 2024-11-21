@@ -135,9 +135,17 @@ namespace viewer
 					if (bytesRead == cctv::Frame::FRAME_SIZE) 
 					{
 
-						chacha20Handler.EncryptDecrypt(nonce, frameBuffer, encrpytFrameBuffer);
+						// 1. frameBuffer를 std::vector<uint8_t>로 변환
+						std::vector<uint8_t> inputBuffer(frameBuffer, frameBuffer + cctv::Frame::FRAME_SIZE);
+						std::vector<uint8_t> outputBuffer(cctv::Frame::FRAME_SIZE);
 
-						int bytesSent = send(socketFd, frameBuffer, cctv::Frame::FRAME_SIZE, 0);
+						// 2. EncryptDecrypt 호출
+						chacha20Handler.EncryptDecrypt(nonce, inputBuffer, outputBuffer);
+
+						// 3. 암호화된 데이터를 frameBuffer로 복사
+						std::memcpy(encrpytFrameBuffer, outputBuffer.data(), cctv::Frame::FRAME_SIZE);
+
+						int bytesSent = send(socketFd, encrpytFrameBuffer, cctv::Frame::FRAME_SIZE, 0);
 						if (bytesSent <= 0) 
 						{
 							logger.Error("send() failed or client disconnected");
