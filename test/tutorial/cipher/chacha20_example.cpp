@@ -7,7 +7,8 @@
 int main() {
     try {
         // Example 256-bit key (32 bytes) and 96-bit nonce (12 bytes)
-        std::vector<uint8_t> key(32, 0x01);    // Replace with secure random key
+        // std::vector<uint8_t> key(32, 0x01);    // Replace with secure random key
+		std::vector<uint8_t> key = cipher::ChaCha20::LoadKeyFromFile( std::string(PROJECT_ROOT) + "/storage/cipher/keyfile.bin");
         std::vector<uint8_t> nonce(12, 0x02); // Replace with secure random nonce
 
 		cipher::ChaCha20 chacha20Handler(key);

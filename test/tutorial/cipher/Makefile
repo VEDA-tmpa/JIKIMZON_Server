@@ -2,7 +2,7 @@ PROJECT_ROOT := $(shell cd ../../.. && pwd)
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++11 $(shell pkg-config --cflags openssl) -I$(PROJECT_ROOT)
+CXXFLAGS = -std=c++11 $(shell pkg-config --cflags openssl) -I$(PROJECT_ROOT) -DPROJECT_ROOT=\"$(PROJECT_ROOT)\"
 LDFLAGS = $(shell pkg-config --libs openssl)
 
 # Target binary
