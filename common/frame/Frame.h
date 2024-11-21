@@ -9,7 +9,7 @@ namespace cctv
 		HEIGHT = 720,
 		PIXEL_SIZE = 3,
 		FRAME_SIZE = (WIDTH * HEIGHT * PIXEL_SIZE)
-	};	
+	};
 }
 
 #endif // FRAME_H

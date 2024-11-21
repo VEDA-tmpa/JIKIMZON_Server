@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #include "Client.h"
-#include "Frame.h"
+#include "common/frame/Frame.h"
 
 namespace cctv
 {
