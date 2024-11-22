@@ -26,8 +26,14 @@ namespace cctv
 	{
 		connectToServer();
 
-		receiveFrameAndSaveToFile();
+		receiveFrames(saveFrameToFile);
 
+	}
+
+	void Client::saveFrameToFile(FILE* file, const char* frameData, size_t frameSize)
+	{
+		fwrite(frameData, sizeof(char), frameSize, file);
+		logger.Info("Frame saved to file");
 	}
 
 	/*
@@ -77,13 +83,11 @@ namespace cctv
 		logger.Info("close(socketFd)");
 	}
 
-	void Client::receiveFrameAndSaveToFile()
+	void Client::receiveFrames(void (*saveFrame)(FILE*, const char*, size_t))
 	{
-		char frameBuffer[Frame::FRAME_SIZE];
-		int totalBytesReceived = 0;
-
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost;
+		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".raw";
 		logger.Info("filePath: " + filePath);
+
 		FILE* file = fopen(filePath.c_str(), "ab");
 		if (!file)
 		{
@@ -91,37 +95,40 @@ namespace cctv
 			return;
 		}
 
-		while (true)
-		{	
-	        int bytesReceived = recv(mSocketFd, frameBuffer + totalBytesReceived, Frame::FRAME_SIZE - totalBytesReceived, 0);
-			if (bytesReceived < 0)
-			{
-				if (errno == EINTR) 
+		{
+			char frameBuffer[Frame::FRAME_SIZE];
+			int totalBytesReceived = 0;
+
+			while (true)
+			{	
+				int bytesReceived = recv(mSocketFd, frameBuffer + totalBytesReceived, Frame::FRAME_SIZE - totalBytesReceived, 0);
+				if (bytesReceived < 0)
 				{
-					continue; // 인터럽트 발생 시 재시도
+					if (errno == EINTR) 
+					{
+						continue; // 인터럽트 발생 시 재시도
+					}
+					logger.Error("recv() fail");
+					break;
 				}
-				logger.Error("recv() fail");
-				break;
-			}
-			else if (bytesReceived == 0)
-			{
-				// 서버가 연결을 종료함
-				logger.Info("Connection closed by server");
-				break;
-			}
+				else if (bytesReceived == 0)
+				{
+					// 서버가 연결을 종료함
+					logger.Info("Connection closed by server");
+					break;
+				}
 
-			totalBytesReceived += bytesReceived;
+				totalBytesReceived += bytesReceived;
 
-			// 전체 데이터를 수신했는지 확인
-			if (totalBytesReceived >= Frame::FRAME_SIZE)
-			{
-				fwrite(frameBuffer, sizeof(char), Frame::FRAME_SIZE, file); // 프레임 데이터를 파일에 저장
-
-				// 다음 프레임 수신을 위해 초기화
-				totalBytesReceived = 0;
+				if (totalBytesReceived >= Frame::FRAME_SIZE) // 전체 데이터를 수신했는지 확인
+				{
+					saveFrame(file, frameBuffer, Frame::FRAME_SIZE);
+					
+					totalBytesReceived = 0; // 다음 프레임 수신을 위해 초기화
+				}
 			}
-		}
-		
+		}	
+
 		fclose(file);
 	}
 }

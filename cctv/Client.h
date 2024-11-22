@@ -2,6 +2,8 @@
 #define CLIENT_H
 
 #include <string>
+#include <iostream>
+
 
 #include "common/log/Logger.h"
 
@@ -31,7 +33,8 @@ namespace cctv
 
 		void connectToServer();
 
-		void receiveFrameAndSaveToFile();
+		void receiveFrames(void (*saveFrame)(FILE*, const char*, size_t));
+		static void saveFrameToFile(FILE* file, const char* frameData, size_t frameSize);
 	};
 }
 #endif /* CLIENT_H */
