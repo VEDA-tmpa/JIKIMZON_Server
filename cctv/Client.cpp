@@ -83,7 +83,7 @@ namespace cctv
 		logger.Info("close(socketFd)");
 	}
 
-	void Client::receiveFrames(void (*saveFrame)(FILE*, const char*, size_t))
+	void Client::receiveFrames(SaveFrameHandler saveFrameHandler)
 	{
 		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".raw";
 		logger.Info("filePath: " + filePath);
@@ -122,7 +122,7 @@ namespace cctv
 
 				if (totalBytesReceived >= Frame::FRAME_SIZE) // 전체 데이터를 수신했는지 확인
 				{
-					saveFrame(file, frameBuffer, Frame::FRAME_SIZE);
+					saveFrameHandler(file, frameBuffer, Frame::FRAME_SIZE);
 					
 					totalBytesReceived = 0; // 다음 프레임 수신을 위해 초기화
 				}

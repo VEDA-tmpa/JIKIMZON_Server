@@ -4,7 +4,6 @@
 #include <string>
 #include <iostream>
 
-
 #include "common/log/Logger.h"
 
 namespace cctv
@@ -13,6 +12,8 @@ namespace cctv
 		std::string ip;
 		int port;
 	} host_t;
+
+	typedef void (*SaveFrameHandler)(FILE*, const char*, size_t);
 
 	class Client
 	{
@@ -33,7 +34,7 @@ namespace cctv
 
 		void connectToServer();
 
-		void receiveFrames(void (*saveFrame)(FILE*, const char*, size_t));
+		void receiveFrames(SaveFrameHandler SaveFrameHandler);
 		static void saveFrameToFile(FILE* file, const char* frameData, size_t frameSize);
 	};
 }
