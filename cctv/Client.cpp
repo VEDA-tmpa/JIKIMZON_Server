@@ -132,8 +132,7 @@ namespace cctv
 			int headerResult = receiveData(headerBuffer.data(), sizeof(frame::Header));
             if (headerResult <= 0)
             {
-                fclose(file);
-                return;
+				goto end;
             }
 
 			// 2. Header 역직렬화
@@ -144,16 +143,23 @@ namespace cctv
 
 			// 3. Body 수신
 			std::vector<uint8_t> bodyBuffer(header.GetBodySize());
-			int bodyResult = receiveData(bodyBuffer.data(), header.GetBodySize());
-            if (bodyResult <= 0)
-            {
-                fclose(file);
-                return;
-            }
+			int bodyResult = 0;
+			if (header.GetBodySize() > 0)
+			{
+				bodyResult = receiveData(bodyBuffer.data(), header.GetBodySize());
+			}
 
-			// 4. Body 역직렬화
+			if (bodyResult < 0)
+			{
+				goto end;
+			}
+
+			// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
 			frame::Body body;
-			body.Deserialize(bodyBuffer);
+			if (bodyResult > 0)
+			{
+				body.Deserialize(bodyBuffer);
+			}
 
 			// 5. Frame 객체 생성
 			frame::Frame frame(header, body);
@@ -163,7 +169,7 @@ namespace cctv
 			// 6. 저장
 			saveFrameHandler(file, reinterpret_cast<const char*>(frameBuffer.data()), frameBuffer.size());
 		}
-
+end:
 		fclose(file);
 	}
 }
