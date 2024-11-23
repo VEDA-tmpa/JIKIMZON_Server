@@ -1,6 +1,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <cstring>
 
 #include "Client.h"
 #include "common/frame/Frame.h"
@@ -58,7 +59,7 @@ namespace cctv
 		// 서버 주소 설정
 		sockaddr_in server_addr = { 0, };
 		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(mPort); // htons(port)는 호스트 바이트 순서(Host Byte Order)를 네트워크 바이트 순서(Network Byte Order)로 바꿔주는 함수. 바이트 순서가 호스트와 네트워크 간에 다를 수 있으므로, 네트워크에서 사용할 수 있도록 포트를 변환.
+		server_addr.sin_port = htons(mPort);
 		inet_pton(AF_INET, mHost.c_str(), &server_addr.sin_addr);
 		logger.Info("sockaddr_in structure setting success");
 
@@ -95,39 +96,86 @@ namespace cctv
 			return;
 		}
 
+		while (true)
 		{
-			char frameBuffer[Frame::FRAME_SIZE];
+			// 1. Header 수신
+			std::vector<uint8_t> headerBuffer(sizeof(frame::Header));
 			int totalBytesReceived = 0;
-
-			while (true)
-			{	
-				int bytesReceived = recv(mSocketFd, frameBuffer + totalBytesReceived, Frame::FRAME_SIZE - totalBytesReceived, 0);
+			while (totalBytesReceived < sizeof(frame::Header))
+			{
+				int bytesReceived = recv(mSocketFd, 
+                                    	 headerBuffer.data() + totalBytesReceived,
+										 sizeof(frame::Header) - totalBytesReceived, 
+										 0);
 				if (bytesReceived < 0)
 				{
-					if (errno == EINTR) 
+					if (errno == EINTR)
 					{
 						continue; // 인터럽트 발생 시 재시도
 					}
-					logger.Error("recv() fail");
-					break;
+					logger.Error("recv() failed while receiving header");
+					fclose(file);
+					return;
+				}
+				else if (bytesReceived == 0) // 서버가 연결을 종료함
+				{
+					logger.Info("Connection closed by server");
+					fclose(file);
+					return;
+				}
+
+				totalBytesReceived += bytesReceived;
+			}
+
+			// 2. Header 역직렬화
+			frame::Header header;
+			header.Deserialize(headerBuffer);
+
+			// 역직렬화 된 Header 정보 확인
+			logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
+						 ", BodySize: " + std::to_string(header.GetBodySize()));
+
+			// 3. 본문 데이터 수신
+			std::vector<uint8_t> bodyBuffer(header.GetBodySize());
+			totalBytesReceived = 0;
+			while (totalBytesReceived < header.GetBodySize())
+			{
+				int bytesReceived = recv(mSocketFd,
+										 reinterpret_cast<char*>(bodyBuffer.data()) + totalBytesReceived,
+										 header.GetBodySize() - totalBytesReceived, 
+										 0);
+				if (bytesReceived < 0)
+				{
+					if (errno == EINTR)
+					{
+						continue; // 인터럽트 발생 시 재시도
+					}
+					logger.Error("recv() failed while receiving body");
+					fclose(file);
+					return;
 				}
 				else if (bytesReceived == 0)
 				{
 					// 서버가 연결을 종료함
 					logger.Info("Connection closed by server");
-					break;
+					fclose(file);
+					return;
 				}
 
 				totalBytesReceived += bytesReceived;
-
-				if (totalBytesReceived >= Frame::FRAME_SIZE) // 전체 데이터를 수신했는지 확인
-				{
-					saveFrameHandler(file, frameBuffer, Frame::FRAME_SIZE);
-					
-					totalBytesReceived = 0; // 다음 프레임 수신을 위해 초기화
-				}
 			}
-		}	
+			// 4. Body 역직렬화
+			frame::Body body;
+			body.Deserialize(bodyBuffer);
+
+			// 5. Frame 객체 생성
+			frame::Frame frame(header, body);
+			std::vector<uint8_t> frameBuffer;
+			frame.Serialize(frameBuffer);
+			
+			// 6. 저장
+			saveFrameHandler(file, reinterpret_cast<const char*>(frameBuffer.data()), frameBuffer.size());
+		}
 
 		fclose(file);
 	}
