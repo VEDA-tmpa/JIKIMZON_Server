@@ -1,11 +1,10 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#define OUT
-
 #include <cstdint>
 #include <vector>
 
+#include "common/ISerializable.h"
 #include "Header.h"
 #include "Body.h"
 
@@ -17,15 +16,15 @@ namespace frame
         H264 = 1
     };
 
-    class Frame
+    class Frame : public common::ISerializable
 	{
 	public:
 		Frame() = default;
 		Frame(Header header, Body body);
 		~Frame() = default;
 
-		void Serialize(std::vector<uint8_t>& OUT buffer) const;
-		void Deserialize(std::vector<uint8_t>& buffer);
+		void Serialize(std::vector<uint8_t>& OUT buffer) const override;
+		void Deserialize(std::vector<uint8_t>& buffer) override;
 
 		size_t GetSize() const;
 		const Header& GetHeader() const; 

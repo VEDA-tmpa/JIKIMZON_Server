@@ -1,18 +1,18 @@
 #ifndef BODY_H
 #define BODY_H
 
-#define OUT
-
 #include <cstdint>
 #include <vector>
 
+#include "common/ISerializable.h"
+
 namespace frame
 {
-	class Body
+	class Body : public common::ISerializable
 	{
 	public:
-		void Serialize(std::vector<uint8_t>& OUT buffer) const;
-		void Deserialize(std::vector<uint8_t>& buffer);	
+		void Serialize(std::vector<uint8_t>& OUT buffer) const override;
+		void Deserialize(std::vector<uint8_t>& buffer) override;	
 
 		std::vector<uint8_t> GetImage() const;
 		void SetBody(std::vector<uint8_t> image);

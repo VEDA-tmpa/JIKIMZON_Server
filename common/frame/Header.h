@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#define OUT
+#include "common/ISerializable.h"
 
 namespace frame
 {
@@ -42,11 +42,11 @@ namespace frame
 		uint8_t padding2[1];  	// 1 byte (for alignment)
 	};
 	
-	class Header
+	class Header : public common::ISerializable
 	{
 	public:
-		void Deserialize(std::vector<uint8_t>& buffer);	
-		void Serialize(std::vector<uint8_t>& OUT buffer) const;
+		void Deserialize(std::vector<uint8_t>& buffer) override;	
+		void Serialize(std::vector<uint8_t>& OUT buffer) const override;
 
 		uint32_t GetFrameId() const;
 		uint32_t GetBodySize() const;
