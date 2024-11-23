@@ -3,65 +3,67 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <cstring>
+#include <cassert>
 
 namespace frame
 {
-	void Frame::Serialize(std::vector<uint8_t>& OUT frameBuffer)
+	Frame::Frame(Header serializedHeader, Body serializedBody)
+        : mHeader(serializedHeader)
+        , mBody(serializedBody)
     {
-        // setup buffer size
-        frameBuffer.clear();
-        frameBuffer.resize(sizeof(Header) + mHeader.bodySize);
-
-        // serialize header
-        {
-            mHeader.frameId = htonl(mHeader.frameId);
-            mHeader.bodySize = htonl(mHeader.bodySize);
-            mHeader.imageWidth = htons(mHeader.imageWidth);
-            mHeader.imageHeight = htons(mHeader.imageHeight);
-    
-            std::memcpy(frameBuffer.data(), reinterpret_cast<void*>(&mHeader), sizeof(Header));
-        }
-
-        // serialize body
-        {
-            std::memcpy(frameBuffer.data() + sizeof(Header), mBody.image.data(), mBody.image.size());
-        }
     }
 
-    void Frame::Deserialize(std::vector<uint8_t>& OUT frameBuffer)
+    size_t Frame::GetSize() const
     {
-        if (frameBuffer.size() < sizeof(Header))
-        {
-            throw std::runtime_error("Buffer size is too small for a valid Frame.");
-        }
-
-        {
-            std::memcpy(&mHeader, frameBuffer.data(), sizeof(Header));
-
-            mHeader.frameId = ntohl(mHeader.frameId);
-            mHeader.bodySize = ntohl(mHeader.bodySize);
-            mHeader.imageWidth = ntohs(mHeader.imageWidth);
-            mHeader.imageHeight = ntohs(mHeader.imageHeight);
-        }
-
-        {
-            size_t bodySize = frameBuffer.size() - sizeof(Header);
-            mBody.image.resize(bodySize);
-            std::memcpy(mBody.image.data(), frameBuffer.data() + sizeof(Header), bodySize);
-        }
+        return sizeof(HeaderStruct) + mHeader.GetBodySize();
     }
 
-	const Header& Frame::GetHeader() const
+    const Header& Frame::GetHeader() const
+    {
+        return mHeader;
+    }
+
+    const Body& Frame::GetBody() const
+    {
+        return mBody;
+    }
+
+    void Frame::Serialize(std::vector<uint8_t>& OUT buffer)
+    {
+        std::vector<uint8_t> headerBuffer;
+        std::vector<uint8_t> bodyBuffer;
+
+        mHeader.Serialize(headerBuffer);
+        mBody.Serialize(bodyBuffer);
+
+        buffer.clear();
+        buffer.insert(buffer.end(), headerBuffer.begin(), headerBuffer.end());
+        buffer.insert(buffer.end(), bodyBuffer.begin(), bodyBuffer.end());
+    }
+
+	void Frame::Deserialize(std::vector<uint8_t>& buffer)
 	{
-		return mHeader;
-	}
-	const Body& Frame::GetBody() const
-	{
-		return mBody;
-	}
+		if (buffer.size() < sizeof(HeaderStruct))
+		{
+			std::cerr << "Buffer size is too small to deserialize HeaderStruct" << std::endl;
+			return;
+		}
 
-    void Frame::SetHeader(struct Header& header)
-    {
-        mHeader = header;
-    }
+		
+		std::vector<uint8_t> headerBuffer(buffer.begin(), buffer.begin() + sizeof(HeaderStruct));
+		mHeader.Deserialize(headerBuffer);
+		
+		
+		size_t bodyStartIndex = sizeof(HeaderStruct);
+		size_t bodySize = mHeader.GetBodySize();
+	
+		if (buffer.size() < bodyStartIndex + bodySize)
+		{
+			std::cerr << "Buffer size is too small to deserialize Body" << std::endl;
+			return;
+		}
+		
+		std::vector<uint8_t> bodyBuffer(buffer.begin() + bodyStartIndex, buffer.begin() + bodyStartIndex + bodySize);
+		mBody.Deserialize(bodyBuffer);
+	}
 }
