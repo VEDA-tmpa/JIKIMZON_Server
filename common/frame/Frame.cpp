@@ -28,7 +28,7 @@ namespace frame
         return mBody;
     }
 
-    void Frame::Serialize(std::vector<uint8_t>& OUT buffer)
+    void Frame::Serialize(std::vector<uint8_t>& OUT buffer) const
     {
         std::vector<uint8_t> headerBuffer;
         std::vector<uint8_t> bodyBuffer;

@@ -24,7 +24,7 @@ namespace frame
 		Frame(Header header, Body body);
 		~Frame() = default;
 
-		void Serialize(std::vector<uint8_t>& OUT buffer);
+		void Serialize(std::vector<uint8_t>& OUT buffer) const;
 		void Deserialize(std::vector<uint8_t>& buffer);
 
 		size_t GetSize() const;

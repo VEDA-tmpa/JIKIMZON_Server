@@ -2,7 +2,7 @@
 
 namespace frame
 {
-	void Body::Serialize(std::vector<uint8_t>& OUT buffer)
+	void Body::Serialize(std::vector<uint8_t>& OUT buffer) const
     {
         buffer.clear();
         buffer.resize(mImage.size());

@@ -46,7 +46,7 @@ namespace frame
 	{
 	public:
 		void Deserialize(std::vector<uint8_t>& buffer);	
-		void Serialize(std::vector<uint8_t>& OUT buffer);
+		void Serialize(std::vector<uint8_t>& OUT buffer) const;
 
 		uint32_t GetFrameId() const;
 		uint32_t GetBodySize() const;

@@ -5,7 +5,7 @@
 
 namespace frame
 {
-	void Header::Serialize(std::vector<uint8_t>& OUT buffer)
+	void Header::Serialize(std::vector<uint8_t>& OUT buffer) const
     {
         buffer.resize(sizeof(HeaderStruct));
 
