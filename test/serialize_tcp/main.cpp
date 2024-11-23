@@ -71,7 +71,6 @@ int main()
 	if (client_sock < 0)
 	{
 		perror("Accept failed");
-		continue;
 	}
 
 
