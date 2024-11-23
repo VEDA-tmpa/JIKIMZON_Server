@@ -84,6 +84,35 @@ namespace cctv
 		logger.Info("close(socketFd)");
 	}
 
+	int Client::receiveData(void* buffer, size_t size)
+	{
+		int totalBytesReceived = 0;
+		while (totalBytesReceived < size)
+		{
+			int bytesReceived = recv(mSocketFd,
+									 reinterpret_cast<char*>(buffer) + totalBytesReceived,
+									 size - totalBytesReceived,
+									 0);
+			if (bytesReceived < 0)
+			{
+				if (errno == EINTR)
+				{
+					continue; // 인터럽트 발생 시 재시도
+				}
+				logger.Error("recv() failed while receiving data");
+				return -1;
+			}
+			else if (bytesReceived == 0) // 서버가 연결을 종료함
+			{
+				logger.Info("Connection closed by server");
+				return 0;
+			}
+
+			totalBytesReceived += bytesReceived;
+		}
+		return totalBytesReceived;
+	}
+
 	void Client::receiveFrames(SaveFrameHandler saveFrameHandler)
 	{
 		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".raw";
@@ -100,70 +129,28 @@ namespace cctv
 		{
 			// 1. Header 수신
 			std::vector<uint8_t> headerBuffer(sizeof(frame::Header));
-			int totalBytesReceived = 0;
-			while (totalBytesReceived < sizeof(frame::Header))
-			{
-				int bytesReceived = recv(mSocketFd, 
-                                    	 headerBuffer.data() + totalBytesReceived,
-										 sizeof(frame::Header) - totalBytesReceived, 
-										 0);
-				if (bytesReceived < 0)
-				{
-					if (errno == EINTR)
-					{
-						continue; // 인터럽트 발생 시 재시도
-					}
-					logger.Error("recv() failed while receiving header");
-					fclose(file);
-					return;
-				}
-				else if (bytesReceived == 0) // 서버가 연결을 종료함
-				{
-					logger.Info("Connection closed by server");
-					fclose(file);
-					return;
-				}
-
-				totalBytesReceived += bytesReceived;
-			}
+			int headerResult = receiveData(headerBuffer.data(), sizeof(frame::Header));
+            if (headerResult <= 0)
+            {
+                fclose(file);
+                return;
+            }
 
 			// 2. Header 역직렬화
 			frame::Header header;
 			header.Deserialize(headerBuffer);
-
-			// 역직렬화 된 Header 정보 확인
 			logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
 						 ", BodySize: " + std::to_string(header.GetBodySize()));
 
-			// 3. 본문 데이터 수신
+			// 3. Body 수신
 			std::vector<uint8_t> bodyBuffer(header.GetBodySize());
-			totalBytesReceived = 0;
-			while (totalBytesReceived < header.GetBodySize())
-			{
-				int bytesReceived = recv(mSocketFd,
-										 reinterpret_cast<char*>(bodyBuffer.data()) + totalBytesReceived,
-										 header.GetBodySize() - totalBytesReceived, 
-										 0);
-				if (bytesReceived < 0)
-				{
-					if (errno == EINTR)
-					{
-						continue; // 인터럽트 발생 시 재시도
-					}
-					logger.Error("recv() failed while receiving body");
-					fclose(file);
-					return;
-				}
-				else if (bytesReceived == 0)
-				{
-					// 서버가 연결을 종료함
-					logger.Info("Connection closed by server");
-					fclose(file);
-					return;
-				}
+			int bodyResult = receiveData(bodyBuffer.data(), header.GetBodySize());
+            if (bodyResult <= 0)
+            {
+                fclose(file);
+                return;
+            }
 
-				totalBytesReceived += bytesReceived;
-			}
 			// 4. Body 역직렬화
 			frame::Body body;
 			body.Deserialize(bodyBuffer);

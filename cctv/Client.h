@@ -34,6 +34,7 @@ namespace cctv
 
 		void connectToServer();
 
+		int receiveData(void* buffer, size_t size);
 		void receiveFrames(SaveFrameHandler SaveFrameHandler);
 		static void saveFrameToFile(FILE* file, const char* frameData, size_t frameSize);
 	};
