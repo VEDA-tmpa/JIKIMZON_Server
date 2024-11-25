@@ -128,20 +128,24 @@ namespace cctv
 		while (true)
 		{
 			// 1. Header 수신
-			std::vector<uint8_t> headerBuffer(sizeof(frame::Header));
-			int headerResult = receiveData(headerBuffer.data(), sizeof(frame::Header));
-            if (headerResult <= 0)
-            {
+			logger.Info("Header receive");
+			std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
+			int headerResult = receiveData(headerBuffer.data(), sizeof(frame::HeaderStruct));
+			logger.Debug("Header receive size");
+			if (headerResult <= 0)
+			{
 				goto end;
-            }
+			}
 
 			// 2. Header 역직렬화
+			logger.Info("Header deserialize");
 			frame::Header header;
 			header.Deserialize(headerBuffer);
 			logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
 						 ", BodySize: " + std::to_string(header.GetBodySize()));
 
 			// 3. Body 수신
+			logger.Info("Body receive");
 			std::vector<uint8_t> bodyBuffer(header.GetBodySize());
 			int bodyResult = 0;
 			if (header.GetBodySize() > 0)
@@ -155,6 +159,7 @@ namespace cctv
 			}
 
 			// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
+			logger.Info("Body deserialize");
 			frame::Body body;
 			if (bodyResult > 0)
 			{
@@ -162,6 +167,7 @@ namespace cctv
 			}
 
 			// 5. Frame 객체 생성
+			logger.Info("Frame init");
 			frame::Frame frame(header, body);
 			std::vector<uint8_t> frameBuffer;
 			frame.Serialize(frameBuffer);
