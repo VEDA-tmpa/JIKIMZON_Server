@@ -167,9 +167,10 @@ namespace cctv
 
 
 
-
 			std::vector<uint8_t> decrypted;
-			std::vector<uint8_t> nonce(12, 0x02);
+			std::string timestamp = header.GetTimestamp();
+			std::vector<uint8_t> nonce(12, 0x00);
+			std::copy(timestamp.end() - 12, timestamp.end(), nonce.begin());
 			chacha20Handler.EncryptDecrypt(nonce, bodyBuffer, decrypted);
 			
 			std::cout << "Decrypted: ";
