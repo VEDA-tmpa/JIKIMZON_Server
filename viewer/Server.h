@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include "common/log/Logger.h"
+#include "common/cipher/ICiphable.h"
 
 namespace viewer 
 {
@@ -11,7 +12,7 @@ namespace viewer
 		enum { PORT = 12345 };
 		
 		Server() = delete;
-		Server(int port);
+		Server(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
 		~Server() = default;
 
 		void Start();
@@ -22,6 +23,8 @@ namespace viewer
 
 		int mPort;
 		int mServerSocketFd;
+
+		std::unique_ptr<cipher::ICiphable> mCipherHandler;
 
 		void setupServer();
 		void streaming(int socketFd);

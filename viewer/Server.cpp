@@ -12,9 +12,10 @@ namespace viewer
 {
 	logger::Logger Server::logger("Server");
 
-	Server::Server(int port)
+	Server::Server(int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
 		: mPort(port)
 		, mServerSocketFd(-1)
+		, mCipherHandler(std::move(cipherHandler))
 	{
 	}
 
@@ -95,11 +96,6 @@ namespace viewer
 			return;
 		}
 
-logger.Debug("setup cipher");
-std::vector<uint8_t> key = cipher::ChaCha20::LoadKeyFromFile( std::string(PROJECT_ROOT) + "/viewer/keyfile.bin" );
-cipher::ChaCha20 chacha20Handler(key);
-logger.Debug("setup cipher complete");
-
 		std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
 		long lastFileSize = 0; // 마지막 읽은 위치 추적 변수
 
@@ -164,7 +160,7 @@ logger.Debug("setup cipher complete");
 					// Body 암호화
 					std::vector<uint8_t> encryptedBody;
 					std::vector<uint8_t> nonce(12, 0x00);
-					chacha20Handler.EncryptDecrypt(nonce, bodyBuffer, encryptedBody);
+					mCipherHandler->Encrypt(bodyBuffer, encryptedBody, nonce);
 
 					body.SetBody(encryptedBody);
 
