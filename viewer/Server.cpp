@@ -83,7 +83,7 @@ namespace viewer
 	{
 		logger.Info("streaming start");
 
-		const std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + fixture::cctv1.ip;
+		const std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + fixture::cctv1.ip + ".raw";
 		logger.Info(filePath);
 
 		FILE* file = fopen(filePath.c_str(), "rb");
@@ -93,8 +93,7 @@ namespace viewer
 			return;
 		}
 
-
-		char frameBuffer[cctv::Frame::FRAME_SIZE];
+		std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
 		long lastFileSize = 0; // 마지막 읽은 위치 추적 변수
 
 		while (true)
@@ -122,30 +121,56 @@ namespace viewer
 				}
 
 				// 새로운 데이터를 프레임 단위로 읽고 전송
-				while (newBytes >= cctv::Frame::FRAME_SIZE) 
+				while (newBytes >= sizeof(frame::HeaderStruct)) 
 				{
-					size_t bytesRead = fread(frameBuffer, sizeof(char), cctv::Frame::FRAME_SIZE, file);
-					if (bytesRead == cctv::Frame::FRAME_SIZE) 
+					// 헤더 읽기
+					if (fread(headerBuffer.data(), sizeof(uint8_t), sizeof(frame::HeaderStruct), file) != sizeof(frame::HeaderStruct))
 					{
-						int bytesSent = send(socketFd, frameBuffer, cctv::Frame::FRAME_SIZE, 0);
-						if (bytesSent <= 0) 
-						{
-							logger.Error("send() failed or client disconnected");
-							fclose(file);
-							return; // 클라이언트 연결 종료
-						}
-					} 
+						logger.Error("Failed to read header");
+						break;
+					}
+					header.Deserialize(headerBuffer);
+
+					uint32_t bodySize = header.GetBodySize();
+					if (newBytes < sizeof(frame::HeaderStruct) + bodySize)
+					{
+						logger.Info("Incomplete frame detected. Waiting for more data.");
+						break;
+					}
+
+					// Body 읽기
+					std::vector<uint8_t> bodyBuffer(bodySize);
+					if (fread(bodyBuffer.data(), sizeof(uint8_t), bodySize, file) != bodySize)
+					{
+						logger.Error("Failed to read body");
+						break;
+					}
+					frame::Body body;
+					body.SetBody(bodyBuffer);
+
+					// Frame 직렬화 및 전송
+					frame::Frame frame(header, body);
+					std::vector<uint8_t> frameBuffer;
+					frame.Serialize(frameBuffer);
+
+
+					if (send(socketFd, frameBuffer.data(), frameBuffer.size(), 0) <= 0)
+					{
+						logger.Error("send() failed or client disconnected");
+						fclose(file);
+						return; // 클라이언트 연결 종료
+					}
 					else 
 					{
 						logger.Error("fread() failed or unexpected EOF");
 						break;
 					}
 
-					newBytes -= cctv::Frame::FRAME_SIZE; // 읽은 만큼 감소
+					newBytes -= (sizeof(frame::HeaderStruct) + bodySize);
 				}
 
 				// 마지막 읽은 위치 갱신
-				lastFileSize = currentFileSize - (newBytes % cctv::Frame::FRAME_SIZE);
+				lastFileSize = currentFileSize - newBytes;
 			} 
 			else 
 			{
