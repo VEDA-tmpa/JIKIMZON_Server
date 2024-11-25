@@ -28,14 +28,6 @@ namespace cipher
         }
 
         std::vector<uint8_t> key((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	
-		std::cout << "key value: ";
-		for (uint8_t c : key) 
-		{
-			std::cout << std::hex << static_cast<char>(c);
-		}
-		std::cout << std::endl;
-
         file.close();
 
         if (key.size() != 32) {
