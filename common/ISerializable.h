@@ -1,5 +1,5 @@
-#ifndef ISERIALIZABLE_H
-#define ISERIALIZABLE_H
+#ifndef I_SERIALIZABLE_H
+#define I_SERIALIZABLE_H
 
 #define OUT
 
