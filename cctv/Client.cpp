@@ -5,6 +5,7 @@
 
 #include "Client.h"
 #include "common/frame/Frame.h"
+#include "common/cipher/ChaCha20.h"
 
 namespace cctv
 {
@@ -125,6 +126,12 @@ namespace cctv
 			return;
 		}
 
+		logger.Debug("setup cipher");
+		std::vector<uint8_t> key = cipher::ChaCha20::LoadKeyFromFile( std::string(PROJECT_ROOT) + "/cctv/keyfile.bin" );
+		cipher::ChaCha20 chacha20Handler(key);
+		logger.Debug("setup cipher complete");
+
+
 		while (true)
 		{
 			// 1. Header 수신
@@ -157,6 +164,21 @@ namespace cctv
 			{
 				goto end;
 			}
+
+
+
+
+			std::vector<uint8_t> decrypted;
+			std::vector<uint8_t> nonce(12, 0x02);
+			chacha20Handler.EncryptDecrypt(nonce, bodyBuffer, decrypted);
+			
+			std::cout << "Decrypted: ";
+			for (uint8_t c : decrypted) {
+				std::cout << static_cast<uint8_t>(c);
+			}
+			std::cout << std::endl;
+
+
 
 			// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
 			logger.Info("Body deserialize");
