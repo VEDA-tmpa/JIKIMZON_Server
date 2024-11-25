@@ -116,7 +116,7 @@ namespace cctv
 
 	void Client::receiveFrames(SaveFrameHandler saveFrameHandler)
 	{
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".raw";
+		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
 		logger.Info("filePath: " + filePath);
 
 		FILE* file = fopen(filePath.c_str(), "ab");

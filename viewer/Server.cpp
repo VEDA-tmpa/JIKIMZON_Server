@@ -83,7 +83,7 @@ namespace viewer
 	{
 		logger.Info("streaming start");
 
-		const std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + fixture::cctv1.ip + ".raw";
+		const std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + fixture::cctv1.ip + ".h264";
 		logger.Info(filePath);
 
 		FILE* file = fopen(filePath.c_str(), "rb");
