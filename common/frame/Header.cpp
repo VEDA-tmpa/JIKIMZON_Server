@@ -1,10 +1,13 @@
 #include <arpa/inet.h>
 #include <cassert>
+#include <string>
 
 #include "Header.h"
 
 namespace frame
 {
+	logger::Logger Header::logger("Header");
+
 	void Header::Serialize(std::vector<uint8_t>& OUT buffer) const
     {
         buffer.resize(sizeof(HeaderStruct));
@@ -19,7 +22,10 @@ namespace frame
     }
 
     void Header::Deserialize(std::vector<uint8_t>& buffer)
-    {
+    {	
+		logger.Info("Deserialize() start");
+		logger.Debug("buffer.size(): " + std::to_string(buffer.size()));
+
         assert(buffer.size() == sizeof(HeaderStruct));
 
         std::memcpy(&mHeader, buffer.data(), sizeof(HeaderStruct));

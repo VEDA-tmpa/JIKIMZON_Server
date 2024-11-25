@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "common/ISerializable.h"
+#include "common/log/Logger.h"
 
 namespace frame
 {
@@ -45,6 +46,8 @@ namespace frame
 	class Header : public common::ISerializable
 	{
 	public:
+		static logger::Logger logger;
+
 		void Deserialize(std::vector<uint8_t>& buffer) override;	
 		void Serialize(std::vector<uint8_t>& OUT buffer) const override;
 
