@@ -15,6 +15,7 @@ SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
 		   $(PROJECT_ROOT)/common/frame/Header.cpp \
 		   $(PROJECT_ROOT)/common/frame/Body.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20.cpp \
+		   $(PROJECT_ROOT)/common/cipher/ChaCha20CipherAdapter.cpp \
 		   $(PROJECT_ROOT)/cctv/main.cpp \
            $(PROJECT_ROOT)/cctv/Client.cpp
 

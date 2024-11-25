@@ -3,8 +3,10 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 #include "common/log/Logger.h"
+#include "common/cipher/ICiphable.h"
 
 namespace cctv
 {
@@ -18,7 +20,7 @@ namespace cctv
 	class Client
 	{
 	public:
-		Client(std::string& host, int port);
+		Client(std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
 		~Client();
 		
 		void Start();
@@ -31,6 +33,8 @@ namespace cctv
 		int mPort;
 		int mSocketFd;
 		bool mbClosed;
+
+		std::unique_ptr<cipher::ICiphable> mCipherHandler;
 
 		void connectToServer();
 
