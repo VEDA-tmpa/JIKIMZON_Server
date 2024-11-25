@@ -1,10 +1,12 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <string>
 
 #include "viewer/Server.h"
 #include "common/frame/Frame.h"
 #include "test/fixture/Fixture.h"
+#include "common/cipher/ChaCha20.h"
 
 namespace viewer
 {
@@ -93,6 +95,11 @@ namespace viewer
 			return;
 		}
 
+logger.Debug("setup cipher");
+std::vector<uint8_t> key = cipher::ChaCha20::LoadKeyFromFile( std::string(PROJECT_ROOT) + "/viewer/keyfile.bin" );
+cipher::ChaCha20 chacha20Handler(key);
+logger.Debug("setup cipher complete");
+
 		std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
 		long lastFileSize = 0; // 마지막 읽은 위치 추적 변수
 
@@ -124,12 +131,19 @@ namespace viewer
 				while (newBytes >= sizeof(frame::HeaderStruct)) 
 				{
 					// 헤더 읽기
+					frame::Header header;
 					if (fread(headerBuffer.data(), sizeof(uint8_t), sizeof(frame::HeaderStruct), file) != sizeof(frame::HeaderStruct))
 					{
 						logger.Error("Failed to read header");
 						break;
 					}
 					header.Deserialize(headerBuffer);
+
+					logger.Debug("header: frameId: " + std::to_string(header.GetFrameId()));
+					logger.Debug("header: imageHeight: " + std::to_string(header.GetImageHeight()));
+					logger.Debug("header: imageWidth: " + std::to_string(header.GetImageWidth()));
+					logger.Debug("header: bodySize: " + std::to_string(header.GetBodySize()));
+					logger.Debug("header: timestamp: " + header.GetTimestamp());
 
 					uint32_t bodySize = header.GetBodySize();
 					if (newBytes < sizeof(frame::HeaderStruct) + bodySize)
@@ -146,24 +160,25 @@ namespace viewer
 						break;
 					}
 					frame::Body body;
-					body.SetBody(bodyBuffer);
+
+					// Body 암호화
+					std::vector<uint8_t> encryptedBody;
+					std::vector<uint8_t> nonce(12, 0x00);
+					chacha20Handler.EncryptDecrypt(nonce, bodyBuffer, encryptedBody);
+
+					body.SetBody(encryptedBody);
+
 
 					// Frame 직렬화 및 전송
 					frame::Frame frame(header, body);
 					std::vector<uint8_t> frameBuffer;
 					frame.Serialize(frameBuffer);
 
-
 					if (send(socketFd, frameBuffer.data(), frameBuffer.size(), 0) <= 0)
 					{
 						logger.Error("send() failed or client disconnected");
 						fclose(file);
 						return; // 클라이언트 연결 종료
-					}
-					else 
-					{
-						logger.Error("fread() failed or unexpected EOF");
-						break;
 					}
 
 					newBytes -= (sizeof(frame::HeaderStruct) + bodySize);
