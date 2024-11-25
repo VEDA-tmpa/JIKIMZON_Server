@@ -1,9 +1,10 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <cstring>
 
 #include "Client.h"
-#include "Frame.h"
+#include "common/frame/Frame.h"
 
 namespace cctv
 {
@@ -26,8 +27,14 @@ namespace cctv
 	{
 		connectToServer();
 
-		receiveFrameAndSaveToFile();
+		receiveFrames(saveFrameToFile);
 
+	}
+
+	void Client::saveFrameToFile(FILE* file, const char* frameData, size_t frameSize)
+	{
+		fwrite(frameData, sizeof(char), frameSize, file);
+		logger.Info("Frame saved to file");
 	}
 
 	/*
@@ -52,7 +59,7 @@ namespace cctv
 		// 서버 주소 설정
 		sockaddr_in server_addr = { 0, };
 		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(mPort); // htons(port)는 호스트 바이트 순서(Host Byte Order)를 네트워크 바이트 순서(Network Byte Order)로 바꿔주는 함수. 바이트 순서가 호스트와 네트워크 간에 다를 수 있으므로, 네트워크에서 사용할 수 있도록 포트를 변환.
+		server_addr.sin_port = htons(mPort);
 		inet_pton(AF_INET, mHost.c_str(), &server_addr.sin_addr);
 		logger.Info("sockaddr_in structure setting success");
 
@@ -77,13 +84,40 @@ namespace cctv
 		logger.Info("close(socketFd)");
 	}
 
-	void Client::receiveFrameAndSaveToFile()
+	int Client::receiveData(void* buffer, size_t size)
 	{
-		char frameBuffer[Frame::FRAME_SIZE];
 		int totalBytesReceived = 0;
+		while (totalBytesReceived < size)
+		{
+			int bytesReceived = recv(mSocketFd,
+									 reinterpret_cast<char*>(buffer) + totalBytesReceived,
+									 size - totalBytesReceived,
+									 0);
+			if (bytesReceived < 0)
+			{
+				if (errno == EINTR)
+				{
+					continue; // 인터럽트 발생 시 재시도
+				}
+				logger.Error("recv() failed while receiving data");
+				return -1;
+			}
+			else if (bytesReceived == 0) // 서버가 연결을 종료함
+			{
+				logger.Info("Connection closed by server");
+				return 0;
+			}
 
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost;
+			totalBytesReceived += bytesReceived;
+		}
+		return totalBytesReceived;
+	}
+
+	void Client::receiveFrames(SaveFrameHandler saveFrameHandler)
+	{
+		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".raw";
 		logger.Info("filePath: " + filePath);
+
 		FILE* file = fopen(filePath.c_str(), "ab");
 		if (!file)
 		{
@@ -92,36 +126,56 @@ namespace cctv
 		}
 
 		while (true)
-		{	
-	        int bytesReceived = recv(mSocketFd, frameBuffer + totalBytesReceived, Frame::FRAME_SIZE - totalBytesReceived, 0);
-			if (bytesReceived < 0)
+		{
+			// 1. Header 수신
+			logger.Info("Header receive");
+			std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
+			int headerResult = receiveData(headerBuffer.data(), sizeof(frame::HeaderStruct));
+			logger.Debug("Header receive size");
+			if (headerResult <= 0)
 			{
-				if (errno == EINTR) 
-				{
-					continue; // 인터럽트 발생 시 재시도
-				}
-				logger.Error("recv() fail");
-				break;
-			}
-			else if (bytesReceived == 0)
-			{
-				// 서버가 연결을 종료함
-				logger.Info("Connection closed by server");
-				break;
+				goto end;
 			}
 
-			totalBytesReceived += bytesReceived;
+			// 2. Header 역직렬화
+			logger.Info("Header deserialize");
+			frame::Header header;
+			header.Deserialize(headerBuffer);
+			logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
+						 ", BodySize: " + std::to_string(header.GetBodySize()));
 
-			// 전체 데이터를 수신했는지 확인
-			if (totalBytesReceived >= Frame::FRAME_SIZE)
+			// 3. Body 수신
+			logger.Info("Body receive");
+			std::vector<uint8_t> bodyBuffer(header.GetBodySize());
+			int bodyResult = 0;
+			if (header.GetBodySize() > 0)
 			{
-				fwrite(frameBuffer, sizeof(char), Frame::FRAME_SIZE, file); // 프레임 데이터를 파일에 저장
-
-				// 다음 프레임 수신을 위해 초기화
-				totalBytesReceived = 0;
+				bodyResult = receiveData(bodyBuffer.data(), header.GetBodySize());
 			}
+
+			if (bodyResult < 0)
+			{
+				goto end;
+			}
+
+			// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
+			logger.Info("Body deserialize");
+			frame::Body body;
+			if (bodyResult > 0)
+			{
+				body.Deserialize(bodyBuffer);
+			}
+
+			// 5. Frame 객체 생성
+			logger.Info("Frame init");
+			frame::Frame frame(header, body);
+			std::vector<uint8_t> frameBuffer;
+			frame.Serialize(frameBuffer);
+			
+			// 6. 저장
+			saveFrameHandler(file, reinterpret_cast<const char*>(frameBuffer.data()), frameBuffer.size());
 		}
-		
+end:
 		fclose(file);
 	}
 }

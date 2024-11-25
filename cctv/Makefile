@@ -10,6 +10,9 @@ CXXFLAGS := -std=c++17
 
 # 소스 파일과 타겟 설정
 SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
+		   $(PROJECT_ROOT)/common/frame/Frame.cpp \
+		   $(PROJECT_ROOT)/common/frame/Header.cpp \
+		   $(PROJECT_ROOT)/common/frame/Body.cpp \
 		   $(PROJECT_ROOT)/cctv/main.cpp \
            $(PROJECT_ROOT)/cctv/Client.cpp
 

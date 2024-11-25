@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #include "viewer/Server.h"
-#include "cctv/Frame.h"
+#include "common/frame/Frame.h"
 #include "test/fixture/Fixture.h"
 
 namespace viewer
