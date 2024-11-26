@@ -3,11 +3,11 @@
 
 #include <string>
 
-#include "cctv/Client.h"
+#include "common/tcp/NodeType.h"
 
 namespace fixture
 {
-	extern cctv::host_t cctv1;
+	extern tcp::host_t cctv1;
 }
 
 #endif /* FIXTURE_H */
