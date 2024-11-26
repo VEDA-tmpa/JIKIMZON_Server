@@ -228,39 +228,54 @@ namespace video
 		while (!mVideoHeaders.empty())
 		{
 			const VideoHeader& videoHeader = mVideoHeaders.front();
-	
+			
+			// VideoHeader가 참조하는 모든 프레임 데이터 삭제되었는지 확인
 			bool isAllFramesDeleted = true;
 			for (size_t frameNum = videoHeader.FrameStartPointer; frameNum <= videoHeader.FrameEndPointer; ++frameNum)
 			{
 				std::string headerFilePath = mFrameHeaderDir + "/frame_header_" + std::to_string(frameNum) + ".json";
 				std::string bodyFilePath = mFrameBodyDir + "/frame_body_" + std::to_string(frameNum) + ".bin";
-
+				
 				if (std::filesystem::exists(headerFilePath) || std::filesystem::exists(bodyFilePath))
 				{
 					isAllFramesDeleted = false;
 					break;
 				}
 			}
-
+			
+			// 모든 참조 데이터가 삭제된 경우 VideoHeader 삭제
 			if (isAllFramesDeleted)
 			{
-				std::string fileName = "video_header_" +
-										std::to_string(videoHeader.FrameStartPointer) + "_" +
-										std::to_string(videoHeader.FrameEndPointer) + ".json";
-				std::string videoHeaderFilePath = mVideoHeaderDir + "/" + fileName;
-
-				if (std::filesystem::exists(videoHeaderFilePath))
+				std::string videoHeaderFilePath = mVideoHeaderDir + "/video_header.json";
+				std::ifstream inFile(videoHeaderFilePath);
+				std::ofstream outFile("temp_video_header.json");
+				
+				std::string line;
+				while(std::getline(inFile, line))
 				{
-					if (std::filesystem::remove(videoHeaderFilePath))
+					nlohmann::json json = nlohmann::json::parse(line);
+					
+					if (json["StartTimestamp"] == videoHeader.StartTimestamp &&
+                    json["EndTimestamp"] == videoHeader.EndTimestamp)
 					{
-						std::cout << "Storage: Deleted VideoHeader file: " << videoHeaderFilePath << "\n";
+						std::cout << "Storage: Deleted VideoHeader from file. \n";
+						continue; // Skip writing this VideoHeader
 					}
+					
+					outFile << line << "\n";
 				}
+				
+				inFile.close();
+				outFile.close();
+				
+				std::filesystem::remove("temp_video_header.json");
+				std::filesystem::remove(videoHeaderFilePath);
+				
 				mVideoHeaders.pop_front();
 			}
 			else
 			{
-				break;
+				break;	// 가장 오래된 VideoHeader의 데이터가 아직 남아있는 경우
 			}
 		}
 	}		
