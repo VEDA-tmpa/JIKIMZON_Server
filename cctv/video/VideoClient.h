@@ -24,7 +24,8 @@ namespace cctv
         void handleData(const void* buffer, size_t size) override;
 
     private:
-		void saveFrameToFile(FILE* file, const char* frameData, size_t frameSize);
+		void saveFrame(frame::Frame frame);
+		void saveToFile(FILE* file, const char* data, size_t size); // TODO : storage 에서 제공
 		
 		frame::Frame receiveFrame();
 

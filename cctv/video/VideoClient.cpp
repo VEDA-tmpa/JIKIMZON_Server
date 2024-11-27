@@ -15,24 +15,7 @@ namespace cctv
     {
 		frame::Frame frame = receiveFrame();
 
-
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
-		logger.Info("filePath: " + filePath);
-
-		FILE* file = fopen(filePath.c_str(), "ab");
-		if (!file)
-		{
-			logger.Error("Failed to open output file");
-			return;
-		}
-
-
-		std::vector<uint8_t> outFrameBuffer;
-		frame.Serialize(outFrameBuffer);
-		saveFrameToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
-
-		
-		fclose(file);
+		saveFrame(frame);
 	}
 	
 	frame::Frame VideoClient::receiveFrame()
@@ -89,10 +72,32 @@ namespace cctv
 		return frame;
 	}
 
-	void VideoClient::saveFrameToFile(FILE* file, const char* frameData, size_t frameSize)
+	void VideoClient::saveFrame(frame::Frame frame)
 	{
-		fwrite(frameData, sizeof(char), frameSize, file);
-		logger.Info("Frame saved to file");
+		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
+		logger.Info("filePath: " + filePath);
+
+		FILE* file = fopen(filePath.c_str(), "ab");
+		if (!file)
+		{
+			logger.Error("Failed to open output file");
+			return;
+		}
+
+		{
+			std::vector<uint8_t> outFrameBuffer;
+			frame.Serialize(outFrameBuffer);
+			
+			saveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
+		}
+
+		fclose(file);
+	}
+
+	void VideoClient::saveToFile(FILE* file, const char* data, size_t size)
+	{
+		fwrite(data, sizeof(char), size, file);
+		logger.Info("Data saved to file");
 	}
 
 	void VideoClient::decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted)
