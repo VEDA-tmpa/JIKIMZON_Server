@@ -24,9 +24,10 @@ namespace cctv
         void handleData(const void* buffer, size_t size) override;
 
     private:
-		static void saveFrameToFile(FILE* file, const char* frameData, size_t frameSize);
+		void saveFrameToFile(FILE* file, const char* frameData, size_t frameSize);
 		
-		void receiveFrames(FILE* file, SaveHandler saveFrameHandler);
+		frame::Frame receiveFrame();
+
 		void decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted);
     };
 }
