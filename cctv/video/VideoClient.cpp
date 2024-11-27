@@ -88,16 +88,10 @@ namespace cctv
 			std::vector<uint8_t> outFrameBuffer;
 			frame.Serialize(outFrameBuffer);
 			
-			saveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
+			storage::SaveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
 		}
 
 		fclose(file);
-	}
-
-	void VideoClient::saveToFile(FILE* file, const char* data, size_t size)
-	{
-		fwrite(data, sizeof(char), size, file);
-		logger.Info("Data saved to file");
 	}
 
 	void VideoClient::decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted)

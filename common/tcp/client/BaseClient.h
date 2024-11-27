@@ -6,6 +6,7 @@
 
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
+#include "common/storage/StorageUtil.h"
 
 namespace tcp
 {

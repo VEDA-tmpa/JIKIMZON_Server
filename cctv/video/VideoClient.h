@@ -25,7 +25,6 @@ namespace cctv
 
     private:
 		void saveFrame(frame::Frame frame);
-		void saveToFile(FILE* file, const char* data, size_t size); // TODO : storage 에서 제공
 		
 		frame::Frame receiveFrame();
 
