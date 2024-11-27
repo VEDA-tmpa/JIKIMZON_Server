@@ -7,7 +7,8 @@ namespace tcp
 {
 	typedef struct host {
 		std::string ip;
-		int port;
+		int videoPort;
+		int jsonPort;
 	} host_t;
 }
 
