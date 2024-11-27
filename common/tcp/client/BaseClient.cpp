@@ -5,11 +5,6 @@
 
 namespace tcp
 {
-	void SaveToFile(FILE* file, const char* data, size_t size)
-	{
-		fwrite(data, sizeof(char), size, file);
-	}
-
 	logger::Logger BaseClient::logger("BaseClient");
 
 	BaseClient::BaseClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)

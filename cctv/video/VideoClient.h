@@ -12,8 +12,6 @@
 
 namespace cctv
 {
-	typedef void (*SaveHandler)(FILE* file, const char* data, size_t dataSize);
-
     class VideoClient : public tcp::BaseClient
     {
     public:
