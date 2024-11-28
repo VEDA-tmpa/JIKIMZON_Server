@@ -15,34 +15,48 @@ namespace cctv
 	{
 	}
 
-	void JsonClient::handleData(const void* buffer, size_t size)
+	void JsonClient::handleData()
+	{
+		char buffer[50]; // TODO: 버퍼에 쌓여있고, 늦게들어온다면, 버퍼 속 구분자(|)를 확인하는 로직 추가필요
+		int received = receiveData(buffer, sizeof(buffer)); 
+		if (received > 0)
+		{
+			nlohmann::json json = receiveJson(buffer, received);
+			saveJson(json);
+		}
+	}
+
+	nlohmann::json JsonClient::receiveJson(const void* buffer, size_t size)
 	{
 		// 수신된 데이터를 버퍼에 추가
 		mDataBuffer.append(static_cast<const char*>(buffer), size);
 		logger.Debug("json buffer: " + mDataBuffer);
 
-		size_t delimiterPos = 0;
-		while ((delimiterPos = mDataBuffer.find(JSON_DELIMITER)) != std::string::npos)
+		// 구분자를 찾는다
+		size_t delimiterPos = mDataBuffer.find(JSON_DELIMITER);
+		if (delimiterPos == std::string::npos)
 		{
-			// 구분자 이전까지의 데이터 추출
-			std::string jsonString = mDataBuffer.substr(0, delimiterPos);
+			// 구분자가 없다면 아직 JSON이 완전하지 않음
+			throw std::runtime_error("Incomplete JSON data. Waiting for more data.");
+		}
 
-			try
-			{
-				// JSON 파싱 시도
-				auto json = nlohmann::json::parse(jsonString);
-				logger.Debug("Received JSON: \n" + json.dump(4));
+		// 구분자 이전까지의 JSON 문자열 추출
+		std::string jsonString = mDataBuffer.substr(0, delimiterPos);
 
-				// JSON 처리
-				saveJson(json);
-			}
-			catch (const nlohmann::json::parse_error& e)
-			{
-				logger.Warning("JSON parse error: " + std::string(e.what()));
-			}
+		// 남은 데이터를 mDataBuffer에 유지
+		mDataBuffer.erase(0, delimiterPos + 1);
 
-			// 처리된 데이터 제거 (구분자 포함)
-			mDataBuffer.erase(0, delimiterPos + 1);
+		// JSON 파싱 시도
+		try
+		{
+			nlohmann::json json = nlohmann::json::parse(jsonString);
+			logger.Debug("Received JSON: \n" + json.dump(4));
+			return json;
+		}
+		catch (const nlohmann::json::parse_error& e)
+		{
+			logger.Warning("JSON parse error: " + std::string(e.what()));
+			throw std::runtime_error("Failed to parse JSON data.");
 		}
 	}
 

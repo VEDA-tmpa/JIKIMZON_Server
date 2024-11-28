@@ -14,6 +14,7 @@ namespace tcp
 		, mbClosed(true) 
 		, mCipherHandler(std::move(cipherHandler))
 	{
+		logger.Debug("port: " + std::to_string(port));
 	}
 
 	BaseClient::~BaseClient()
@@ -25,14 +26,9 @@ namespace tcp
 	{
 		connectToServer();
 
-		char buffer[4096];
 		while (mbClosed == false)
 		{
-			int received = receiveData(buffer, sizeof(buffer));
-			if (received > 0)
-			{
-				handleData(buffer, received);
-			}
+			handleData();
 		}
 	}
 
@@ -68,7 +64,8 @@ namespace tcp
 		// 서버에 연결
 		if (connect(mSocketFd, (sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
 		{
-			logger.Error("connect() fail");
+
+			logger.Error("connect() fail: " + std::to_string(mPort));
 			return;
 		}
 		mbClosed = false;
@@ -85,7 +82,7 @@ namespace tcp
 									 reinterpret_cast<char*>(buffer) + totalBytesReceived,
 									 size - totalBytesReceived,
 									 0);
-
+			logger.Debug("bytesReceived: " + std::to_string(bytesReceived));
 			if (bytesReceived < 0)  // 에러 발생
 			{
 				if (errno == EINTR)

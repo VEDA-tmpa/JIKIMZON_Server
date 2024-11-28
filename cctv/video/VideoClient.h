@@ -19,7 +19,7 @@ namespace cctv
         ~VideoClient();
 
     protected:
-        void handleData(const void* buffer, size_t size) override;
+        void handleData() override;
 
     private:
 		void saveFrame(frame::Frame frame);

@@ -16,11 +16,12 @@ namespace cctv
         ~JsonClient();
 
     protected:
-        void handleData(const void* buffer, size_t size) override;
+        void handleData() override;
 
     private:
 		static logger::Logger logger;
 
+		nlohmann::json receiveJson(const void* buffer, size_t size);
 		void saveJson(nlohmann::json json);
 
 		std::string mDataBuffer;

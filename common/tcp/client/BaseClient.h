@@ -20,7 +20,7 @@ namespace tcp
 		void Close();
 
 	protected:
-		virtual void handleData(const void* buffer, size_t size) = 0;
+		virtual void handleData() = 0;
 		
 		int receiveData(void* buffer, size_t size);
 
