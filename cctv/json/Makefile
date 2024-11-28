@@ -11,14 +11,15 @@ LDFLAGS = $(shell pkg-config --libs openssl --libs nlohmann_json)
 
 # 소스 파일과 타겟 설정
 SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
+		   $(PROJECT_ROOT)/test/fixture/Fixture.cpp \
 		   $(PROJECT_ROOT)/common/tcp/client/BaseClient.cpp \
 		   $(PROJECT_ROOT)/common/frame/Frame.cpp \
 		   $(PROJECT_ROOT)/common/frame/Header.cpp \
 		   $(PROJECT_ROOT)/common/frame/Body.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20CipherAdapter.cpp \
-		   $(PROJECT_ROOT)/cctv/video/main.cpp \
-           $(PROJECT_ROOT)/cctv/video/VideoClient.cpp
+		   $(PROJECT_ROOT)/cctv/json/main.cpp \
+           $(PROJECT_ROOT)/cctv/json/JsonClient.cpp
 
 TARGET := main.out
 

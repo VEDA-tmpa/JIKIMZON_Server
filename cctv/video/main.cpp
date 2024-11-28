@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "cctv/video/VideoClient.h"
-#include "test/fixture/Fixture.cpp"
+#include "test/fixture/Fixture.h"
 #include "common/cipher/ChaCha20CipherAdapter.h"
 #include "common/cipher/ICiphable.h"
 
