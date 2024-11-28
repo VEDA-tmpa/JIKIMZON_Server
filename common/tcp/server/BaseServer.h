@@ -1,24 +1,25 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <arpa/inet.h>
+
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
 
-namespace viewer 
+namespace tcp 
 {
-	class Server
+	class BaseServer
 	{
-	public:
-		enum { PORT = 12345 };
-		
-		Server() = delete;
-		Server(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
-		~Server() = default;
+	public:		
+		BaseServer() = delete;
+		BaseServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		~BaseServer() = default;
 
 		void Start();
 
-	private:
-		enum { BACK_LOG = 3 };
+	protected:
+		virtual void handleData(int socketFd) = 0;
+
 		static logger::Logger logger;
 
 		int mPort;
@@ -26,8 +27,10 @@ namespace viewer
 
 		std::unique_ptr<cipher::ICiphable> mCipherHandler;
 
+	private:
+		enum { BACK_LOG = 3 };
+
 		void setupServer();
-		void streaming(int socketFd);
 	};
 }
 
