@@ -10,6 +10,8 @@ namespace cctv
     class JsonClient : public tcp::BaseClient
     {
     public:
+		enum { JSON_DELIMITER = '|' };
+		
         JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
         ~JsonClient();
 
@@ -17,6 +19,8 @@ namespace cctv
         void handleData(const void* buffer, size_t size) override;
 
     private:
+		static logger::Logger logger;
+
 		void saveJson(nlohmann::json json);
 
 		std::string mDataBuffer;

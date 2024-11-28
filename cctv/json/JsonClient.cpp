@@ -1,45 +1,50 @@
-#include "JsonClient.h"
+	#include "JsonClient.h"
 
 namespace cctv
 {
-    JsonClient::JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-        : BaseClient(host, port, std::move(cipherHandler)) 
+	logger::Logger JsonClient::logger("JsonClient");
+
+	JsonClient::JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
+		: BaseClient(host, port, std::move(cipherHandler)) 
 		, mDataBuffer("")
 	{
+		logger.Debug("json port: " + std::to_string(port));
 	}
 
-    JsonClient::~JsonClient() 
+	JsonClient::~JsonClient() 
 	{
 	}
 
-    void JsonClient::handleData(const void* buffer, size_t size)
-    {
+	void JsonClient::handleData(const void* buffer, size_t size)
+	{
 		// 수신된 데이터를 버퍼에 추가
 		mDataBuffer.append(static_cast<const char*>(buffer), size);
+		logger.Debug("json buffer: " + mDataBuffer);
 
-		// JSON 데이터가 완전한지 확인
-		if (!nlohmann::json::accept(mDataBuffer))
+		size_t delimiterPos = 0;
+		while ((delimiterPos = mDataBuffer.find(JSON_DELIMITER)) != std::string::npos)
 		{
-			logger.Warn("Incomplete JSON data, waiting for more data.");
-			return;
-		}
+			// 구분자 이전까지의 데이터 추출
+			std::string jsonString = mDataBuffer.substr(0, delimiterPos);
 
-		try
-		{
-			// JSON 파싱 시도
-			auto json = nlohmann::json::parse(mDataBuffer);
+			try
+			{
+				// JSON 파싱 시도
+				auto json = nlohmann::json::parse(jsonString);
+				logger.Debug("Received JSON: \n" + json.dump(4));
 
-			// JSON 처리
-			saveJson(json);
+				// JSON 처리
+				saveJson(json);
+			}
+			catch (const nlohmann::json::parse_error& e)
+			{
+				logger.Warning("JSON parse error: " + std::string(e.what()));
+			}
 
-			// 파싱 성공 시, 데이터 버퍼 초기화
-			mDataBuffer.clear();
+			// 처리된 데이터 제거 (구분자 포함)
+			mDataBuffer.erase(0, delimiterPos + 1);
 		}
-		catch (const nlohmann::json::parse_error& e)
-		{
-			logger.Warn("JSON parse error: " + std::string(e.what()));
-		}
-    }
+	}
 
 	void JsonClient::saveJson(nlohmann::json json)
 	{
@@ -58,7 +63,7 @@ namespace cctv
 
 		{
 			std::string jsonString = json.dump();
-			SaveToFile(file, jsonString.c_str(), jsonString.size());
+			storage::SaveToFile(file, jsonString.c_str(), jsonString.size());
 		}
 
 		fclose(file);
