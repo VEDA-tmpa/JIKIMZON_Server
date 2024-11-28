@@ -97,6 +97,7 @@ namespace tcp
 			}
 			else if (bytesReceived == 0) // 서버가 연결을 종료함
 			{
+				mbClosed = true;
 				logger.Info("Connection closed by server");
 				return 0;
 			}
