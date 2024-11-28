@@ -10,31 +10,31 @@
 
 namespace tcp
 {
-    class BaseClient
-    {
-    public:
-        BaseClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
-        virtual ~BaseClient();
+	class BaseClient
+	{
+	public:
+		BaseClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		virtual ~BaseClient();
 
-        void Start();
-        void Close();
+		void Start();
+		void Close();
 
-    protected:
-        virtual void handleData(const void* buffer, size_t size) = 0;
-        
+	protected:
+		virtual void handleData(const void* buffer, size_t size) = 0;
+		
 		int receiveData(void* buffer, size_t size);
 
-        static logger::Logger logger;
+		static logger::Logger logger;
 
-        std::string mHost;
-        int mPort;
-        int mSocketFd;
-        bool mbClosed;
+		std::string mHost;
+		int mPort;
+		int mSocketFd;
+		bool mbClosed;
 
-        std::unique_ptr<cipher::ICiphable> mCipherHandler;
+		std::unique_ptr<cipher::ICiphable> mCipherHandler;
 
-    private:
-        void connectToServer();
-    };
+	private:
+		void connectToServer();
+	};
 }
 #endif /* BASE_CLIENT_H */
