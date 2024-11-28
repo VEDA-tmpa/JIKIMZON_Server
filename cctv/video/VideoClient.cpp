@@ -11,11 +11,13 @@ namespace cctv
 	{
 	}
 
-    void VideoClient::handleData(const void* buffer, size_t size)
+    void VideoClient::handleData()
     {
-		frame::Frame frame = receiveFrame();
-
-		saveFrame(frame);
+		while (true)
+		{
+			frame::Frame frame = receiveFrame();
+			saveFrame(frame);
+		}
 	}
 	
 	frame::Frame VideoClient::receiveFrame()
