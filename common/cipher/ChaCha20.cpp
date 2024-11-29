@@ -1,10 +1,13 @@
 #include <openssl/evp.h>
 #include <fstream>
+#include <iostream>
 
 #include "ChaCha20.h"
 
 namespace cipher
 {
+	logger::Logger ChaCha20::logger("ChaCha20");
+
 	ChaCha20::ChaCha20(std::vector<uint8_t> key)
 		: mKey(key)
 	{
@@ -16,6 +19,8 @@ namespace cipher
 
 	std::vector<uint8_t> ChaCha20::LoadKeyFromFile(const std::string& filePath) 
 	{
+		logger.Debug(filePath);
+
         std::ifstream file(filePath, std::ios::binary);
         if (file.is_open() == false) 
 		{

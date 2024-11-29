@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "common/log/Logger.h"
+
 namespace cipher
 {
 	class ChaCha20
@@ -20,6 +22,8 @@ namespace cipher
 							std::vector<uint8_t>& output);
 
 	private:
+		static logger::Logger logger;
+
 		std::vector<uint8_t> mKey;
 	};
 }
