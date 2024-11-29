@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "common/ISerializable.h"
+#include "common/frame/ISerializable.h"
 #include "common/log/Logger.h"
 
 namespace frame

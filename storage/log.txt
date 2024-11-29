@@ -1,5 +1,0 @@
-2024-11-20 09:52:34 [INFO] Client: connectToServer() start
-2024-11-20 09:52:34 [INFO] Client: socket() success
-2024-11-20 09:52:34 [INFO] Client: sockaddr_in structure setting success
-2024-11-20 09:52:34 [INFO] Client: connect() success
-2024-11-20 09:52:34 [INFO] Client: filePath: /Users/jigiseong/study/veda/FINAL_PROJECT/server/storage/192.168.50.14

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "common/ISerializable.h"
+#include "common/frame/ISerializable.h"
 
 namespace frame
 {
