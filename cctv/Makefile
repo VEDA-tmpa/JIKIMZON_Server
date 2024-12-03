@@ -1,5 +1,5 @@
 # 프로젝트 루트 디렉토리 변수 설정
-PROJECT_ROOT := $(shell cd ../.. && pwd)
+PROJECT_ROOT := $(shell cd .. && pwd)
 
 # Include path에 PROJECT_ROOT 추가
 INCLUDES := -I$(PROJECT_ROOT) -DPROJECT_ROOT=\"$(PROJECT_ROOT)\"
@@ -18,8 +18,9 @@ SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
 		   $(PROJECT_ROOT)/common/frame/Body.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20CipherAdapter.cpp \
-		   $(PROJECT_ROOT)/cctv/json/main.cpp \
-           $(PROJECT_ROOT)/cctv/json/JsonClient.cpp
+		   $(PROJECT_ROOT)/cctv/video/VideoClient.cpp \
+		   $(PROJECT_ROOT)/cctv/json/JsonClient.cpp \
+		   $(PROJECT_ROOT)/cctv/main.cpp 
 
 TARGET := main.out
 
@@ -29,5 +30,6 @@ all: $(TARGET)
 $(TARGET): $(SOURCES)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@ $(LDFLAGS)
 
+# 클린 규칙
 clean:
 	rm -f $(TARGET)
