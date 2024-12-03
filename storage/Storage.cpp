@@ -4,26 +4,45 @@
 namespace video {
 
 Storage::Storage(const std::string& filePath, size_t maxFrames)
-    : mFilePath(filePath), mFrameQueue(maxFrames), mCurrentFrameId(0) {}
+    : mFilePath(filePath), mFrameQueue(maxFrames), mCurrentFrameId(0) 
+{
+	if ( 없다면 ) {
+		mVideoHeader = videoHeader;
+		mFileStream.open(mFilePath, std::ios::binary | std::ios::trunc);
+		if (!mFileStream)
+			throw std::runtime_error("Failed to open file for writing.");
+
+		std::vector<uint8_t> headerBuffer;
+		mVideoHeader.Serialize(headerBuffer);
+		mFileStream.write(reinterpret_cast<const char*>(headerBuffer.data()), headerBuffer.size());
+		mFileStream.flush();
+	}
+
+	if (있다면) {
+		mFileStream.read(reinterpret_cast<const char*>(headerBuffer.data()), headerBuffer.size());)
+		해서 멤버변수
+	};
+}
 
 Storage::~Storage()
 {
     if (mFileStream.is_open())
         mFileStream.close();
+		
 }
 
-void Storage::InitializeVideo(const VideoHeader& videoHeader)
-{
-    mVideoHeader = videoHeader;
-    mFileStream.open(mFilePath, std::ios::binary | std::ios::trunc);
-    if (!mFileStream)
-        throw std::runtime_error("Failed to open file for writing.");
+// void Storage::InitializeVideo(const VideoHeader& videoHeader)
+// {
+//     mVideoHeader = videoHeader;
+//     mFileStream.open(mFilePath, std::ios::binary | std::ios::trunc);
+//     if (!mFileStream)
+//         throw std::runtime_error("Failed to open file for writing.");
 
-    std::vector<uint8_t> headerBuffer;
-    mVideoHeader.Serialize(headerBuffer);
-    mFileStream.write(reinterpret_cast<const char*>(headerBuffer.data()), headerBuffer.size());
-    mFileStream.flush();
-}
+//     std::vector<uint8_t> headerBuffer;
+//     mVideoHeader.Serialize(headerBuffer);
+//     mFileStream.write(reinterpret_cast<const char*>(headerBuffer.data()), headerBuffer.size());
+//     mFileStream.flush();
+// }
 
 void Storage::SaveFrame(const FrameHeader& header, const FrameBody& body)
 {
