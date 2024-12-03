@@ -14,7 +14,7 @@ struct FrameHeader
 {
     uint32_t frameId;
     uint32_t bodySize;
-    char timestamp[19]; // "YYYYMMDD_HHMMSS.sss"
+    char timestamp[20]; // "YYYYMMDD_HHMMSS.sss"
 
     void Serialize(std::vector<uint8_t>& buffer) const
     {

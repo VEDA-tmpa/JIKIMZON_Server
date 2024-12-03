@@ -16,7 +16,7 @@ struct VideoHeader
     uint16_t width;
     uint16_t height;
     uint32_t frameRate;
-    char creationTime[19];      // "YYYYMMDD_HHMMSS.sss"
+    char creationTime[20];      // "YYYYMMDD_HHMMSS.sss"
     uint8_t padding1[1];
     uint64_t startPoint;
     uint64_t endPoint;

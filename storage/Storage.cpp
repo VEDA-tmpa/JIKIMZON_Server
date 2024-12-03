@@ -27,11 +27,12 @@ void Storage::InitializeVideo(const VideoHeader& videoHeader)
 
 void Storage::SaveFrame(const FrameHeader& header, const FrameBody& body)
 {
-    mFrameQueue.Push(header, body);
+    mFrameQueue.Push(std::make_pair(header, body));    
     writeFrameToFile(header, body);
     mCurrentFrameId++;
     mVideoHeader.totalFrames = mCurrentFrameId;
 }
+
 
 bool Storage::GetNextFrame(FrameHeader& header, FrameBody& body)
 {

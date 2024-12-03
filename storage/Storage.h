@@ -3,6 +3,9 @@
 
 #include <string>
 #include <fstream>
+#include <utility>
+#include "FrameHeader.h"
+#include "FrameBody.h"
 #include "VideoHeader.h"
 #include "FrameQueue.h"
 
@@ -22,7 +25,7 @@ public:
 private:
     std::string mFilePath;
     std::ofstream mFileStream;
-    FrameQueue mFrameQueue;
+    FrameQueue<std::pair<FrameHeader, FrameBody>> mFrameQueue;
     VideoHeader mVideoHeader;
     uint32_t mCurrentFrameId;
 
