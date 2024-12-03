@@ -12,7 +12,9 @@ int main(void)
 	const std::string keyFilePath = std::string(PROJECT_ROOT) + "/cctv/" + fixture::cctv1.ip + "/keyfile.bin";
 	std::unique_ptr<cipher::ICiphable> chacha20Handler = std::make_unique<cipher::ChaCha20CipherAdapter>(keyFilePath);
 
-	cctv::VideoClient client(fixture::cctv1.ip, fixture::cctv1.videoPort, std::move(chacha20Handler));
+	video::Storage storage(fixture::cctv1.ip);
+
+	cctv::VideoClient client(fixture::cctv1.ip, fixture::cctv1.videoPort, std::move(chacha20Handler), storage);
 	client.Start();
 
 	return EXIT_SUCCESS;

@@ -2,8 +2,11 @@
 
 namespace cctv
 {
-    VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
+    VideoClient::VideoClient(const std::string& host, int port, 
+							 std::unique_ptr<cipher::ICiphable> cipherHandler,
+							 video::Storage storage);
         : BaseClient(host, port, std::move(cipherHandler)) 
+		, mStorage(storage)
 	{
 	}
 
@@ -16,7 +19,20 @@ namespace cctv
 		while (true)
 		{
 			frame::Frame frame = receiveFrame();
-			saveFrame(frame);
+			// saveFrame(frame);
+
+			frame::Header header = frame.GetHeader();
+			frame::Body body = frame.GetBody();
+			
+
+			mStorage.SaveFrame( video::FrameHeader frameHeader {
+									.frameId = header.GetFrameId(),
+									.bodySize = header.GetBodySize(),
+									.timestamp = header.GetTimestamp()
+								}, 
+								video::FrameBody {
+									.data = body.GetImage();
+								});
 		}
 	}
 	
@@ -74,27 +90,27 @@ namespace cctv
 		return frame;
 	}
 
-	void VideoClient::saveFrame(frame::Frame frame)
-	{
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
-		logger.Info("filePath: " + filePath);
+	// void VideoClient::saveFrame(frame::Frame frame)
+	// {
+	// 	std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
+	// 	logger.Info("filePath: " + filePath);
 
-		FILE* file = fopen(filePath.c_str(), "ab");
-		if (!file)
-		{
-			logger.Error("Failed to open output file");
-			return;
-		}
+	// 	FILE* file = fopen(filePath.c_str(), "ab");
+	// 	if (!file)
+	// 	{
+	// 		logger.Error("Failed to open output file");
+	// 		return;
+	// 	}
 
-		{
-			std::vector<uint8_t> outFrameBuffer;
-			frame.Serialize(outFrameBuffer);
+	// 	{
+	// 		std::vector<uint8_t> outFrameBuffer;
+	// 		frame.Serialize(outFrameBuffer);
 			
-			storage::SaveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
-		}
+	// 		storage::SaveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
+	// 	}
 
-		fclose(file);
-	}
+	// 	fclose(file);
+	// }
 
 	void VideoClient::decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted)
 	{

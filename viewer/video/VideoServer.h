@@ -4,6 +4,7 @@
 #include "common/tcp/server/BaseServer.h"
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
+#include "storage/Storage.h"
 
 namespace viewer 
 {
@@ -13,7 +14,7 @@ namespace viewer
 		enum { PORT = 12345 };
 		
 		VideoServer() = delete;
-		VideoServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		VideoServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler, video::Storage storage);
 		~VideoServer() = default;
 
 	protected:
@@ -21,6 +22,8 @@ namespace viewer
 
 	private:
 		void streaming(int socketFd);
+
+		video::Storage mStorage;
 	};
 }
 
