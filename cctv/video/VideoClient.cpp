@@ -4,7 +4,7 @@ namespace cctv
 {
     VideoClient::VideoClient(const std::string& host, int port, 
 							 std::unique_ptr<cipher::ICiphable> cipherHandler,
-							 video::Storage storage);
+							 video::Storage storage)
         : BaseClient(host, port, std::move(cipherHandler)) 
 		, mStorage(storage)
 	{
@@ -21,18 +21,7 @@ namespace cctv
 			frame::Frame frame = receiveFrame();
 			// saveFrame(frame);
 
-			frame::Header header = frame.GetHeader();
-			frame::Body body = frame.GetBody();
-			
-
-			mStorage.SaveFrame( video::FrameHeader frameHeader {
-									.frameId = header.GetFrameId(),
-									.bodySize = header.GetBodySize(),
-									.timestamp = header.GetTimestamp()
-								}, 
-								video::FrameBody {
-									.data = body.GetImage();
-								});
+			mStorage.SaveFrame(frame);
 		}
 	}
 	

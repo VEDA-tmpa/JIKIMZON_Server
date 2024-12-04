@@ -25,7 +25,7 @@ namespace cctv
         void handleData() override;
 
     private:
-		void saveFrame(frame::Frame frame);
+		// void saveFrame(frame::Frame frame);
 		
 		frame::Frame receiveFrame();
 

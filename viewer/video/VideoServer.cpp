@@ -17,16 +17,33 @@ namespace viewer
 	{
 		// streaming(socketFd); // TODO: storage 메서드를 이용하도록 리팩토링
 
-	
 		while (true)
 		{		
 			// 데이터 받아오기
-			video::FrameHeader outHeader;
-			video::FrameBody outBody;
-			mStorage.GetNextFrame(outHeader, outBody);
+			frame::Frame outFrmae;
+			mStorage.GetNextFrame(outFrmae);
+
+			// 바디 암호화
+			frame::Body body = outFrame.GetBody();
+
+			std::vector<uint8_t> encryptedBody;
+			std::vector<uint8_t> nonce(12, 0x00);
+			mCipherHandler->Encrypt(bodyBuffer, encryptedBody, nonce);
+
+			body.SetBody(encryptedBody);
+
+			// 직렬화
+			frame::Frame frame(outFrmae.GetHeader(), body);
+
+			std::vector<uint8_t> frameBuffer;
+			frame.Serialize(frameBuffer);
 
 			// 보내기
-			
+			if (send(socketFd, frameBuffer.data(), frameBuffer.size(), 0) <= 0)
+			{
+				logger.Error("send() failed or client disconnected");
+				return; // 클라이언트 연결 종료
+			}
 		}
 	}
 
