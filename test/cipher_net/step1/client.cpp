@@ -7,6 +7,7 @@
 #include "common/cipher/ChaCha20.h"
 
 #define SERVER_IP "192.168.10.99" // 서버 IP
+// #define SERVER_IP "127.0.0.1" // 서버 IP
 #define SERVER_PORT 12345     // 서버 포트 (서버와 동일하게 설정)
 
 // 클라이언트 메인 함수
@@ -85,8 +86,8 @@ int main()
 
 
     // 5. 복호화 준비
-    std::vector<uint8_t> key(32, 0x00);
-    std::vector<uint8_t> nonce(12, 0x00);
+    std::vector<uint8_t> key(32, 0x02);
+    std::vector<uint8_t> nonce(12, 0x01);
     cipher::ChaCha20 chacha20Handler(key);
 
     // 6. 복호화 수행

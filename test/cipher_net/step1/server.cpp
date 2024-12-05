@@ -54,8 +54,8 @@ int main(void)
 
 // ------------------------------------------------------------
 
-	std::vector<uint8_t> key(32, 0x00);
-	std::vector<uint8_t> nonce(12, 0x00);
+	std::vector<uint8_t> key(32, 0x02);
+	std::vector<uint8_t> nonce(12, 0x01);
 	cipher::ChaCha20 chacha20Handler(key);
 
 
