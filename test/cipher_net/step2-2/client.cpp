@@ -98,30 +98,14 @@ int main()
     }
     std::cout << std::dec << std::endl;
 
-	std::vector<uint8_t> nonce2(12, 0x00);
+	std::vector<uint8_t> nonce(12, 0x00);
 	std::string timestamp = "20241126_123456.789";
-	std::cout << "before nonce2 size: " << nonce2.size() << std::endl;
+	std::cout << "before nonce size: " << nonce.size() << std::endl;
 
-	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce2에 복사
-	std::transform(timestamp.end() - 12, timestamp.end(), nonce2.begin(),
+	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce에 복사
+	std::transform(timestamp.end() - 12, timestamp.end(), nonce.begin(),
 				[](char c) { return static_cast<int>(c); });
-	std::cout << "after nonce2 size: " << nonce2.size() << std::endl;
-	// nonce 값 출력
-    std::cout << "Nonce2: ";
-    for (uint8_t c : nonce2) {
-        std::cout << static_cast<char>(c);
-    }
-    std::cout << std::endl;
-	std::cout << "Nonce2 (as bytes): ";
-    for (uint8_t c : nonce2) {
-        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
-    }
-    std::cout << std::dec << std::endl;
-
-
-	std::vector<uint8_t> nonce = { 0x36, 0x5f, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x2e, 0x37, 0x38, 0x39 };
-	std::cout << "nonce size: " << nonce.size() << std::endl;
-
+	std::cout << "after nonce size: " << nonce.size() << std::endl;
 	// nonce 값 출력
     std::cout << "Nonce: ";
     for (uint8_t c : nonce) {
@@ -133,6 +117,22 @@ int main()
         std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
     }
     std::cout << std::dec << std::endl;
+
+
+	// std::vector<uint8_t> nonce = { 0x36, 0x5f, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x2e, 0x37, 0x38, 0x39 };
+	// std::cout << "nonce size: " << nonce.size() << std::endl;
+
+	// // nonce 값 출력
+    // std::cout << "Nonce: ";
+    // for (uint8_t c : nonce) {
+    //     std::cout << static_cast<char>(c);
+    // }
+    // std::cout << std::endl;
+	// std::cout << "Nonce (as bytes): ";
+    // for (uint8_t c : nonce) {
+    //     std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
+    // }
+    // std::cout << std::dec << std::endl;
 
 
 	cipher::ChaCha20 chacha20Handler(key);
