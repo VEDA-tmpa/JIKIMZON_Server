@@ -66,7 +66,7 @@ int main(void)
     std::cout << std::dec << std::endl;
 
 	std::vector<uint8_t> nonce(12, 0x00);
-	std::string timestamp = "20241126_123456.789";
+	std::string timestamp = "20241126A123456A789";
 
 	
 	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce에 복사
