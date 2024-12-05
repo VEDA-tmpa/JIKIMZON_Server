@@ -6,7 +6,7 @@
 #include <cstring>
 #include "common/cipher/ChaCha20.h"
 
-#define SERVER_IP "127.0.0.1" // 서버 IP
+#define SERVER_IP "192.168.10.99" // 서버 IP
 #define SERVER_PORT 12345     // 서버 포트 (서버와 동일하게 설정)
 
 // 클라이언트 메인 함수
@@ -19,6 +19,8 @@ int main()
         perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
+    std::cout << "socket" << std::endl;
+
 
     // 2. 서버 주소 설정
     struct sockaddr_in server_addr;
@@ -31,6 +33,8 @@ int main()
         close(client_sock);
         exit(EXIT_FAILURE);
     }
+    std::cout << "setup" << std::endl;
+
 
     // 3. 서버에 연결
     if (connect(client_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)

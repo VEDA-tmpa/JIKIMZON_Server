@@ -49,6 +49,8 @@ int main(void)
 	{
 		perror("Accept failed");
 	}
+	std::cout << "connect client " << std::endl;
+
 
 // ------------------------------------------------------------
 
