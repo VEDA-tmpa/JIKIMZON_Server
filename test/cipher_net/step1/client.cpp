@@ -87,7 +87,21 @@ int main()
 
     // 5. 복호화 준비
     std::vector<uint8_t> key(32, 0x02);
-    std::vector<uint8_t> nonce(12, 0x01);
+	// key 값 출력
+	std::cout << "Key (as bytes): ";
+    for (uint8_t c : key) {
+        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
+    }
+    std::cout << std::dec << std::endl;
+
+	std::vector<uint8_t> nonce(12, 0x01);
+	// nonce 값 출력
+	std::cout << "Nonce (as bytes): ";
+    for (uint8_t c : nonce) {
+        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
+    }
+    std::cout << std::dec << std::endl;
+
     cipher::ChaCha20 chacha20Handler(key);
 
     // 6. 복호화 수행
