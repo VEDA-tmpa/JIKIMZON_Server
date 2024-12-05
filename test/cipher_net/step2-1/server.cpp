@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 
 #include "common/cipher/ChaCha20.h"
 

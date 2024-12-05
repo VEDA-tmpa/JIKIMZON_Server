@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 
 #include "common/cipher/ChaCha20.h"
 
@@ -69,7 +70,7 @@ int main(void)
         std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
     }
     std::cout << std::dec << std::endl;
-	
+
 	cipher::ChaCha20 chacha20Handler(key);
 
 

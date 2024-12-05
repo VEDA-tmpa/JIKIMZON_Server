@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <iomanip>
 
 #include "common/cipher/ChaCha20.h"
 
