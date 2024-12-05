@@ -91,8 +91,19 @@ int main()
     std::vector<uint8_t> key(32, 0x02);
 	std::vector<uint8_t> nonce(12, 0x00);
 	std::string timestamp = "20241126_123456.789";
-	std::copy(timestamp.end() - 12, timestamp.end(), nonce.begin());
 	
+	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce에 복사
+	std::transform(timestamp.end() - 12, timestamp.end(), nonce.begin(),
+				[](char c) { return static_cast<uint8_t>(c); });
+
+	// nonce 값 출력
+	std::cout << "Nonce: ";
+	for (uint8_t c : nonce) {
+		std::cout << static_cast<char>(c);
+	}
+	std::cout << std::endl;
+
+
 	cipher::ChaCha20 chacha20Handler(key);
 
     // 6. 복호화 수행
