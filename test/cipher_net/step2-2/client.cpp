@@ -10,8 +10,8 @@
 
 #include "common/cipher/ChaCha20.h"
 
-// #define SERVER_IP "192.168.10.99" // 서버 IP
-#define SERVER_IP "127.0.0.1" // 서버 IP
+#define SERVER_IP "192.168.10.99" // 서버 IP
+// #define SERVER_IP "127.0.0.1" // 서버 IP
 #define SERVER_PORT 12345     // 서버 포트 (서버와 동일하게 설정)
 
 // 클라이언트 메인 함수
@@ -104,7 +104,7 @@ int main()
 
 	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce2에 복사
 	std::transform(timestamp.end() - 12, timestamp.end(), nonce2.begin(),
-				[](char c) { return static_cast<uint8_t>(c); });
+				[](char c) { return static_cast<int>(c); });
 	std::cout << "after nonce2 size: " << nonce2.size() << std::endl;
 	// nonce 값 출력
     std::cout << "Nonce2: ";
