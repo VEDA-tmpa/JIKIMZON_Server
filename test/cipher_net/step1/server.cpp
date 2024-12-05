@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <cstring>
 #include <iostream>
 
 #include "common/cipher/ChaCha20.h"
