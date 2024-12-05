@@ -12,8 +12,8 @@
 
 #include "common/cipher/ChaCha20.h"
 
-// #define SERVER_IP "192.168.10.99" // 서버 IP
-#define SERVER_IP "127.0.0.1" // 서버 IP
+#define SERVER_IP "192.168.10.99" // 서버 IP
+// #define SERVER_IP "127.0.0.1" // 서버 IP
 #define SERVER_PORT 12345     // 서버 포트 (서버와 동일하게 설정)
 
 // 클라이언트 메인 함수
@@ -130,8 +130,15 @@ int main()
 	std::cout << std::endl;
 
 
-	// std::vector<uint8_t> nonce = { 0x36, 0x5f, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x2e, 0x37, 0x38, 0x39 };
+	std::vector<uint8_t> nonce2 = { 0x36, 0x5f, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x2e, 0x37, 0x38, 0x39 };
 	// std::cout << "nonce size: " << nonce.size() << std::endl;
+	// 비트로 출력
+	std::cout << "Nonce2 (as bits):" << std::endl;
+	for (uint8_t c : nonce2) 
+	{
+		std::cout << std::bitset<8>(c) << " "; // 각 바이트를 비트로 출력
+	}
+	std::cout << std::endl;
 
 	// // nonce 값 출력
     // std::cout << "Nonce: ";
