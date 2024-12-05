@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iomanip>
+#include <bitset>
 
 #include "common/cipher/ChaCha20.h"
 
@@ -87,7 +88,14 @@ int main(void)
         std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c) << " ";
     }
     std::cout << std::dec << std::endl;
-
+	
+	// 비트로 출력
+	std::cout << "Nonce (as bits):" << std::endl;
+	for (uint8_t c : nonce) 
+	{
+		std::cout << std::bitset<8>(c) << " "; // 각 바이트를 비트로 출력
+	}
+	std::cout << std::endl;
 
 
 	// std::vector<uint8_t> nonce = { 0x36, 0x5f, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x2e, 0x37, 0x38, 0x39 };
