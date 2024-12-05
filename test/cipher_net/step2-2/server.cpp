@@ -4,6 +4,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include "common/cipher/ChaCha20.h"
 
@@ -71,7 +72,7 @@ int main(void)
 	}
 	std::cout << std::endl;
 
-	
+
 	cipher::ChaCha20 chacha20Handler(key);
 
 
