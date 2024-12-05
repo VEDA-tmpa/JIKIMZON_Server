@@ -70,10 +70,10 @@ int main(void)
 	std::cout << "before nonce size: " << nonce.size() << std::endl;
 
 	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce에 복사
-	std::transform(timestamp.end() - 14, timestamp.end(), nonce.begin(),
-				[](char c) { return static_cast<uint8_t>(c); });
-
-
+	for (size_t i = 0; i < 12; ++i) 
+	{
+        nonce[i] = static_cast<uint8_t>(timestamp[timestamp.size() - 12 + i]);
+    }
 	
 	std::cout << "after nonce size: " << nonce.size() << std::endl;
 	// nonce 값 출력
