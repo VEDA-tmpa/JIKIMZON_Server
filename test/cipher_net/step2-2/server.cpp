@@ -65,13 +65,14 @@ int main(void)
     }
     std::cout << std::dec << std::endl;
 
-	std::vector<uint8_t> nonce(12, 0x00);
-	std::string timestamp = "2024112691234569789";
+	// std::vector<uint8_t> nonce(12, 0x00);
+	// std::string timestamp = "2024112691234569789";
 
-	
-	// timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce에 복사
-	std::transform(timestamp.end() - 12, timestamp.end(), nonce.begin(),
-				[](char c) { return static_cast<uint8_t>(c); });
+	// // timestamp의 마지막 12문자를 uint8_t로 변환 후 nonce에 복사
+	// std::transform(timestamp.end() - 12, timestamp.end(), nonce.begin(),
+	// 			[](char c) { return static_cast<uint8_t>(c); });
+
+	std::vector<uint8_t> nonce = { 0x36, 0x5f, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x2e, 0x37, 0x38, 0x39 };
 
 	// nonce 값 출력
     std::cout << "Nonce: ";
