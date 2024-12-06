@@ -16,7 +16,11 @@ namespace tcp
 		: mPort(port)
 		, mServerSocketFd(-1)
 		, mCipherHandler(std::move(cipherHandler))
+		, mTlsHandler(std::make_unique<cipher::TlsServerHandler>())
 	{
+		logger.Debug("port: " + std::to_string(port));
+
+		mTlsHandler->Init();
 	}
 
 	void BaseServer::Start() 
@@ -35,15 +39,26 @@ namespace tcp
 				continue;
 			}
 
-			char clientIP[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, sizeof(clientIP));
-			logger.Info("Client connected from IP: " + std::string(clientIP));
+			// TLS 핸드셰이크 수행
+			mTlsHandler->PerformTLSHandshake(clientSocketFd);
+			logger.Info("TLS handshake successful");
 
+			{
+				char clientIP[INET_ADDRSTRLEN];
+				inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, sizeof(clientIP));
+				logger.Info("Client connected from IP: " + std::string(clientIP));
+			}
 
-			handleData(clientSocketFd);
+			{
+				handleData(clientSocketFd);
+			}
 
+			// TLS shutdown
+			mTlsHandler->Shutdown();
+			
+			// TCP shutdown
+			close(clientSocketFd);
 
-			close(clientSocketFd); // 클라이언트 소켓 닫기
 			logger.Info("Client disconnected");
 		}
 	}

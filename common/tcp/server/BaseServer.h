@@ -6,6 +6,8 @@
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
 
+#include "common/cipher/TlsServerHandler.h"
+
 namespace tcp 
 {
 	class BaseServer
@@ -29,6 +31,8 @@ namespace tcp
 
 	private:
 		enum { BACK_LOG = 3 };
+
+		std::unique_ptr<cipher::TlsServerHandler> mTlsHandler;
 
 		void setupServer();
 	};

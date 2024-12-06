@@ -17,6 +17,7 @@ SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
 		   $(PROJECT_ROOT)/common/frame/Body.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20CipherAdapter.cpp \
+		   $(PROJECT_ROOT)/common/cipher/TlsServerHandler.cpp \
 		   $(PROJECT_ROOT)/viewer/json/main.cpp \
            $(PROJECT_ROOT)/viewer/json/JsonServer.cpp \
            $(PROJECT_ROOT)/test/fixture/Fixture.cpp 
