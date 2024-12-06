@@ -40,7 +40,7 @@ namespace tcp
 		if (mbClosed == false)
 		{
 			// TLS shutdown
-			delete mTlsHandler.get();
+			mTlsHandler->Shutdown();
 			
 			// TCP shutdown
 			close(mSocketFd);

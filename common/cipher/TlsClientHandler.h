@@ -14,10 +14,12 @@ namespace cipher
 	{
 	public:
 		TlsClientHandler() = default;
-		~TlsClientHandler();
-
+		~TlsClientHandler() = default;
+		
 		void Init();
 		void PerformTLSHandshake(int clientFd);
+		void Shutdown();
+
 		SSL* GetSSL();
 
 	private:

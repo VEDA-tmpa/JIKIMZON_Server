@@ -2,15 +2,6 @@
 
 namespace cipher
 {
-	TlsClientHandler::~TlsClientHandler()
-	{
-		SSL_shutdown(mSSL);
-		SSL_free(mSSL);
-
-		SSL_CTX_free(mCTX);
-		EVP_cleanup();
-	}
-
 	void TlsClientHandler::Init()
 	{
 		std::cout << "TlsClientHandler::Init() start" << std::endl;
@@ -57,6 +48,15 @@ namespace cipher
 		std::cout << "Connected with " << SSL_get_cipher(mSSL) << " encryption" << std::endl;
 
 		std::cout << "TlsClientHandler::PerformTLSHandshake() end" << std::endl;
+	}
+
+	void TlsClientHandler::Shutdown()
+	{
+		SSL_shutdown(mSSL);
+		SSL_free(mSSL);
+
+		SSL_CTX_free(mCTX);
+		EVP_cleanup();
 	}
 
 	SSL* TlsClientHandler::GetSSL()
