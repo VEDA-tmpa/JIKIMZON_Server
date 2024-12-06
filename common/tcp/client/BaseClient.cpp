@@ -40,7 +40,7 @@ namespace tcp
 		if (mbClosed == false)
 		{
 			// TLS shutdown
-			mTLSHandler->Shutdown();
+			delete mTlsHandler.get();
 			
 			// TCP shutdown
 			close(mSocketFd);
@@ -79,7 +79,7 @@ namespace tcp
 		logger.Info("connect() success");
 
 		// TLS 핸드셰이크 수행
-		mTLSHandler->PerformTLSHandshake(mSocketFd);
+		mTlsHandler->PerformTLSHandshake(mSocketFd);
 		logger.Info("TLS handshake successful");
 		
 		mbClosed = false;
