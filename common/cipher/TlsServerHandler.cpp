@@ -16,7 +16,7 @@ namespace cipher
 		configureContext();
 	}
 
-	void TlsServerHandler::PerformTLSHandshake()
+	void TlsServerHandler::PerformTLSHandshake(int clientFd)
 	{
 		mSSL = SSL_new(mCTX);
 		SSL_set_fd(mSSL, clientFd);
@@ -51,12 +51,14 @@ namespace cipher
 
 	void TlsServerHandler::configureContext()
 	{
-		if (SSL_CTX_use_certificate_file(mCTX, std::string(PROJECT_ROOT) + "/viewer/certs/server.cert", SSL_FILETYPE_PEM) <= 0)
+		const std::string certPath = std::string(PROJECT_ROOT) + "/viewer/certs/server.cert";
+		if (SSL_CTX_use_certificate_file(mCTX, certPath.c_str(), SSL_FILETYPE_PEM) <= 0)
 		{
 			std::cerr << "Failed get certificate" << std::endl;
 		}
 
-		if (SSL_CTX_use_PrivateKey_file(mCTX, std::string(PROJECT_ROOT) +  "/viewer/certs/server.key", SSL_FILETYPE_PEM) <= 0)
+		const std::string keyPath = std::string(PROJECT_ROOT) + "/viewer/certs/server.cert";
+		if (SSL_CTX_use_PrivateKey_file(mCTX, keyPath.c_str(), SSL_FILETYPE_PEM) <= 0)
 		{
 			std::cerr << "Failed get private key" << std::endl;
 		}

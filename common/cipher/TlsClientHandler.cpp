@@ -39,14 +39,14 @@ namespace cipher
 		std::cout << "TlsClientHandler::createSSLContext() end" << std::endl;
 	}
 
-	void TlsClientHandler::PerformTLSHandshake(int clientFd)
+	void TlsClientHandler::PerformTLSHandshake(int serverFd)
 	{
 		std::cout << "TlsClientHandler::PerformTLSHandshake() start" << std::endl;
 
 		mSSL = SSL_new(mCTX);
 		std::cout << "TlsClientHandler::PerformTLSHandshake() SSL_new(mCTX)" << std::endl;
 
-		SSL_set_fd(mSSL, clientFd);
+		SSL_set_fd(mSSL, serverFd);
 		std::cout << "TlsClientHandler::PerformTLSHandshake() SSL_set_fd(mSSL, clientFd)" << std::endl;
 
 		if (SSL_connect(mSSL) <= 0)
