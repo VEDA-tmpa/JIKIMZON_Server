@@ -8,9 +8,11 @@
 #include "common/cipher/ICiphable.h"
 #include "common/storage/StorageUtil.h"
 
+#include "common/cipher/TlsClientHandler.h"
+
 namespace tcp
 {
-	class BaseClient
+	class BaseClient 
 	{
 	public:
 		BaseClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
@@ -35,6 +37,8 @@ namespace tcp
 
 	private:
 		void connectToServer();
+
+		std::unique_ptr<cipher::TlsClientHandler> mTlsHandler;
 	};
 }
 #endif /* BASE_CLIENT_H */
