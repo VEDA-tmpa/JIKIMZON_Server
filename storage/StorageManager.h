@@ -4,6 +4,7 @@
 #include <string>
 
 #include "common/frame/Frame.h"
+#include "common/log/Logger.h"
 #include "storage/StorageFile.h"
 
 #define OUT
@@ -14,17 +15,22 @@ namespace storage
 	{
 	public:
 		StorageManager(const std::string ip);
-		~StorageManager();
+		~StorageManager() = default;
 
-		void SaveFrame(const frame::Frame frame);
-		void GetNextFrame(OUT frame::frame frame) const;
+		void SaveFrame(const frame::Frame& frame);
+		void GetNextFrame(OUT frame::Frame& frame) const;
 
 	private:
+		static void seekToOffsetFromHeader(std::ifstream& storageFile, uint32_t offset = 0);
+		static void loadFrameFromFile(std::ifstream &storageFile, OUT frame::Frame& frame);
+
+		static logger::Logger logger;
+
 		std::string mId;
 		std::string mStorageDirPath;
 		std::string mStorageFilePath;
 
-		storage::Header mFileHeader;
+		mutable storage::Header mFileHeader;
 	};
 }
 
