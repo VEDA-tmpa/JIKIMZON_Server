@@ -3,8 +3,8 @@
 namespace storage
 {
 	Header::Header(std::string filePath)
+		: mStorageFilePath(filePath)
 	{
-
 	}
 
 	Header::~Header()

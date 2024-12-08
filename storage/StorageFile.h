@@ -2,6 +2,7 @@
 #define STORAGE_FILE_H
 
 #include <cstdint>
+#include <string>
 
 namespace storage
 {
