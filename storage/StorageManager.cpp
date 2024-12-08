@@ -46,7 +46,7 @@ namespace storage
 		std::ofstream storageFile(mStorageFilePath, std::ios::binary | std::ios::app);
 		if (storageFile.is_open() == false)
 		{
-				std::cerr << "Error: Unable to open storage file for writing." << std::endl;
+			std::cerr << "Error: Unable to open storage file for writing." << std::endl;
 			return;
 		}
 
@@ -106,5 +106,57 @@ namespace storage
 
 	void StorageManager::GetNextFrame(OUT frame::frame frame) const
 	{
+		// 파일 열기 (읽기 전용)
+		std::ifstream storageFile(mStorageFilePath, std::ios::binary);
+		if (!storageFile.is_open())
+		{
+			std::cerr << "Error: Unable to open storage file for reading." << std::endl;
+			return;
+		}
+
+
+		// 현재 프레임 오프셋 가져오기
+		uint32_t currentItemOffset = mFileHeader.GetCurrentItemOffset();
+		if (currentItemOffset >= mFileHeader.GetLastItemOffset())
+		{
+			std::cerr << "Error: No more frames to read." << std::endl;
+			return;
+		}
+		storageFile.seekg(sizeof(storage::HeaderStruct) + currentItemOffset, std::ios::beg); // 파일 포인터를 현재 오프셋으로 이동
+
+		// 프레임 헤더 읽기
+		std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
+		storageFile.read(reinterpret_cast<char*>(headerBuffer.data()), headerBuffer.size());
+		if (storageFile.gcount() != headerBuffer.size())
+		{
+			std::cerr << "Error: Failed to read frame header." << std::endl;
+			return;
+		}
+		frame::Header header;
+		header.Deserialize(headerBuffer);
+
+		// 프레임 본문 데이터 읽기
+		uint32_t bodySize = header.GetBodySize();
+		std::vector<uint8_t> bodyBuffer(bodySize);
+		storageFile.read(reinterpret_cast<char*>(bodyBuffer.data()), bodyBuffer.size());
+		if (static_cast<uint32_t>(storageFile.gcount()) != bodySize)
+		{
+			std::cerr << "Error: Failed to read frame body." << std::endl;
+			return;
+		}
+		frame.Deserialize(header, bodyBuffer);
+
+
+		// 다음 프레임의 오프셋 계산
+		uint32_t nextItemOffset = static_cast<uint32_t>(storageFile.tellg());
+		if (nextItemOffset == mFileHeader.GetPaddingItemOffset())
+		{
+			storageFile.seekg(sizeof(storage::HeaderStruct), std::ios::beg); // 헤더 영역 이후(== 데이터 영역) 시작 지점으로 이동
+			nextItemOffset = 0;
+		}
+		mFileHeader.SetCurrentItemOffset(nextItemOffset);
+
+
+		mFileHeader.Update();
 	}
 }
