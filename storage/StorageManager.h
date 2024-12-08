@@ -22,7 +22,11 @@ namespace storage
 
 	private:
 		static void seekToOffsetFromHeader(std::ifstream& storageFile, uint32_t offset = 0);
+		static void seekToOffsetFromHeader(std::ofstream& storageFile, uint32_t offset = 0);
+		static void seekToOffsetFromHeader(std::fstream& storageFile, uint32_t offset = 0);
+		static void seekFrameEnd(std::fstream& storageFile, uint32_t offset);
 		static void loadFrameFromFile(std::ifstream &storageFile, OUT frame::Frame& frame);
+		static void writeToFile(std::ofstream& storageFile, frame::Frame& frame);
 
 		static logger::Logger logger;
 

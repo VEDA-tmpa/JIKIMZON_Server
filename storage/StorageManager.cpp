@@ -19,7 +19,28 @@ namespace storage
 		{
 			{
 				std::filesystem::create_directory(mStorageDirPath);
-				std::ofstream outVideoFile(mStorageFilePath, std::ios::binary);
+				std::ofstream storageFile(mStorageFilePath, std::ios::binary);
+				{ // 더미값으로 채워두기 (정적 배열을 기반으로한 링-큐에서 착안)
+					if (storageFile.is_open() == false)
+					{
+						logger.Error("Unable to open storage file for writing.");
+						return;
+					}
+					const uint8_t dummyValue = 0xFF;  // 더미 데이터 값
+					
+					uint64_t remainingSize = storage::MAX_FILE_SIZE;
+					while (remainingSize > 0)
+					{
+						// 한 번에 쓸 수 있는 데이터 크기 (예: 1MB씩 쓰기)
+						size_t chunkSize = std::min(remainingSize, static_cast<uint64_t>(1024 * 1024));
+
+						// 더미 데이터를 쓴다
+						std::vector<uint8_t> buffer(chunkSize, dummyValue);
+						storageFile.write(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+
+						remainingSize -= chunkSize;
+					}
+				}
 			}
 
 			{
@@ -42,21 +63,55 @@ namespace storage
 		
 	void StorageManager::SaveFrame(const frame::Frame& frame)
 	{
-		std::ofstream storageFile(mStorageFilePath, std::ios::binary | std::ios::app);
+    	std::fstream storageFile(mStorageFilePath, std::ios::in | std::ios::out | std::ios::binary);
 		if (storageFile.is_open() == false)
 		{
 			logger.Error("Unable to open storage file for writing.");
 			return;
 		}
 
-		// TODO
+		seekToOffsetFromHeader(storageFile, mFileHeader.GetLastItemOffset());
+		seekFrameEnd(storageFile, static_cast<uint32_t>(storageFile.tellp()));
 
+		uint32_t nextItemOffset = static_cast<uint32_t>(storageFile.tellp());
 
+		if (nextItemOffset + frame.GetSize() > storage::MAX_FILE_SIZE)
+		{
+			mFileHeader.SetPaddingItemOffset(nextItemOffset);
 
+			nextItemOffset = 0;
+			seekToOffsetFromHeader(storageFile, nextItemOffset);
+		}
+
+		if (nextItemOffset <= mFileHeader.GetFirstItemOffset())
+		{
+			uint32_t validFirstOffset = mFileHeader.GetFirstItemOffset();
+			while (nextItemOffset + frame.GetSize() > validFirstOffset)
+			{
+				seekFrameEnd(storageFile, validFirstOffset);
+				validFirstOffset = static_cast<uint32_t>(storageFile.tellp());
+			}
+
+			mFileHeader.SetFirstItemOffset(validFirstOffset);
+		}
+		
+		mFileHeader.SetLastItemOffset(nextItemOffset);
+		mFileHeader.SetCurrentItemOffset(mFileHeader.GetLastItemOffset()); // for streaming mode
+	
 		mFileHeader.UpdateToFile();
+
+		logger.Debug("mFileHeader.GetFirstItemOffset() : " + std::to_string(mFileHeader.GetFirstItemOffset()));
+		logger.Debug("mFileHeader.GetLastItemOffset() : " + std::to_string(mFileHeader.GetLastItemOffset()));
+		logger.Debug("mFileHeader.GetCurrentItemOffset() : " + std::to_string(mFileHeader.GetCurrentItemOffset()));
+		logger.Debug("mFileHeader.GetPaddingItemOffset() : " + std::to_string(mFileHeader.GetPaddingItemOffset()));
 	}
 
-
+	void StorageManager::writeToFile(std::ofstream& storageFile, frame::Frame& frame)
+	{
+		std::vector<uint8_t> outSerializeFrame;
+		frame.Serialize(outSerializeFrame);
+		storageFile.write(reinterpret_cast<const char*>(outSerializeFrame.data()), outSerializeFrame.size());
+	}
 
 	void StorageManager::GetNextFrame(OUT frame::Frame& frame) const
 	{
@@ -91,9 +146,39 @@ namespace storage
 		mFileHeader.UpdateToFile();
 	}
 
-	void StorageManager::seekToOffsetFromHeader(std::ifstream &storageFile, uint32_t offset)
+	void StorageManager::seekToOffsetFromHeader(std::ifstream& storageFile, uint32_t offset)
 	{
 		storageFile.seekg(sizeof(storage::HeaderStruct) + offset, std::ios::beg);
+	}
+
+	void StorageManager::seekToOffsetFromHeader(std::ofstream& storageFile, uint32_t offset)
+	{
+		storageFile.seekp(sizeof(storage::HeaderStruct) + offset, std::ios::beg);
+	}
+
+	void StorageManager::seekToOffsetFromHeader(std::fstream& storageFile, uint32_t offset)
+	{
+		storageFile.seekp(sizeof(storage::HeaderStruct) + offset, std::ios::beg);
+		storageFile.seekg(sizeof(storage::HeaderStruct) + offset, std::ios::beg);
+	}
+
+	void StorageManager::seekFrameEnd(std::fstream& storageFile, uint32_t offset)
+	{
+		seekToOffsetFromHeader(storageFile, offset);
+
+		frame::Header header;
+		{
+			std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));			
+			storageFile.read(reinterpret_cast<char*>(headerBuffer.data()), headerBuffer.size());
+			
+			header.Deserialize(headerBuffer);
+		}
+
+		{
+			uint32_t bodySize = header.GetBodySize();
+	
+			storageFile.seekp(bodySize, std::ios::cur); // 현재 위치에서 bodySize만큼 이동
+		}
 	}
 
 	void StorageManager::loadFrameFromFile(std::ifstream &storageFile, OUT frame::Frame& frame)
