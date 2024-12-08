@@ -1,6 +1,7 @@
 #include <cassert>
 #include <vector>
 #include <cstring>
+#include <iostream>
 
 #include "storage/StorageManager.h"
 #include "common/frame/Frame.h"
@@ -51,6 +52,12 @@ void test_1_save_load()
 	
 	frame::Header outHeader = outFrame.GetHeader();
 
+	std::cout << outHeader.GetFrameId() << std::endl;
+	std::cout << outHeader.GetImageFormat() << std::endl;
+	std::cout << outHeader.GetBodySize() << std::endl;
+	std::cout << outHeader.GetTimestamp() << std::endl;
+	std::cout << outHeader.GetImageHeight() << std::endl;
+	std::cout << outHeader.GetImageWidth() << std::endl;
 	assert(outHeader.GetFrameId() == originHeader.GetFrameId());
 	assert(outHeader.GetImageFormat() == originHeader.GetImageFormat());
 	assert(outHeader.GetBodySize() == originHeader.GetBodySize());

@@ -6,7 +6,8 @@
 
 namespace storage
 {
-    constexpr uint64_t MAX_FILE_SIZE = 4L * 1024 * 1024 * 1024; // 4GB
+    // constexpr uint64_t MAX_FILE_SIZE = 4L * 1024 * 1024 * 1024; // 4GB
+    constexpr uint64_t MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 	/*
 	max file size = 10GB
