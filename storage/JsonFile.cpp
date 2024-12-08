@@ -1,9 +1,9 @@
-#include "save.hpp"
+#include "JsonFile.h"
 
 #include <iostream>
 #include <cstdlib>
 
-Save::Save(size_t cap) : mFile("json.dat", std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc), mCapacity(cap)
+JsonFile::JsonFile(size_t cap) : mFile("json.dat", std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc), mCapacity(cap)
 {
     if (!mFile)
     {
@@ -19,7 +19,7 @@ Save::Save(size_t cap) : mFile("json.dat", std::ios::in | std::ios::out | std::i
     mFile.write(padding.data(), mCapacity);
 }
 
-std::string Save::GetJson()
+std::string JsonFile::GetJson()
 {
     auto end = mItemOffsets.back();
     auto pre = --(--mItemOffsets.end());
@@ -32,7 +32,7 @@ std::string Save::GetJson()
     return std::string(buffer.begin(), buffer.end());
 }
 
-void Save::SaveJson(std::string &data) {
+void JsonFile::SaveJson(std::string &data) {
     data.push_back(',');
 
     // 남은 공간 확인
@@ -81,32 +81,15 @@ void Save::SaveJson(std::string &data) {
     mFile.flush();
 }
 
-<<<<<<< HEAD
-void Save::GetJson()
+std::string JsonFile::GetJson()
 {
-    auto end = --mItemOffsets.end();
-    auto pre = --end;
-    size_t size = *end - *pre;
-    std::vector<char> buffer(size);
-    mFile.seekg(0);
-    mFile.read(buffer.data(), size);
-}
-
-=======
->>>>>>> 0074244 (test: add GetJson)
-std::string Save::ReadJson(size_t size)
-{
-    if (size > mCapacity)
-    {
-        throw std::runtime_error("Read size exceeds queue capacity");
-    }
+    auto end = mItemOffsets.back();
+    auto pre = --(--mItemOffsets.end());
+    size_t size = end - *pre - 1;
 
     std::vector<char> buffer(size);
-    mFile.seekg(0);
+    mFile.seekg(*pre);
     mFile.read(buffer.data(), size);
-
-    // 패딩 제거
-    buffer.erase(std::remove(buffer.begin(), buffer.end(), '\0'), buffer.end());
 
     return std::string(buffer.begin(), buffer.end());
 }
