@@ -1,3 +1,4 @@
+#include <fstream>
 #include "StorageFile.h"
 
 namespace storage
@@ -11,7 +12,7 @@ namespace storage
 	{
 	}
 
-	void Header::Update()
+	void Header::UpdateToFile()
 	{
 		std::ofstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
 		if (!file)
@@ -21,13 +22,13 @@ namespace storage
 		
 		{
 			file.seekp(0);
-			file.write(reinterpret_cast<const char*>(&mHeaderStruct), sizeof(video::HeaderStruct));
+			file.write(reinterpret_cast<const char*>(&mHeaderStruct), sizeof(storage::HeaderStruct));
 		}
 
 		file.close();
 	}
 
-	void Header::Load()
+	void Header::LoadFromFile()
 	{
 		std::ifstream file(mStorageFilePath, std::ios::binary);
 		if (!file) 
@@ -36,7 +37,7 @@ namespace storage
 		}
 		
 		{
-			file.read(reinterpret_cast<char*>(&mHeaderStruct), sizeof(video::HeaderStruct));
+			file.read(reinterpret_cast<char*>(&mHeaderStruct), sizeof(storage::HeaderStruct));
 		}
 
 		file.close();

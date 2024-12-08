@@ -6,7 +6,7 @@
 
 namespace storage
 {
-    constexpr uint32_t MAX_FILE_SIZE = 4L * 1024 * 1024 * 1024; // 4GB
+    constexpr uint64_t MAX_FILE_SIZE = 4L * 1024 * 1024 * 1024; // 4GB
 
 	/*
 	max file size = 10GB
@@ -41,8 +41,8 @@ namespace storage
 		Header(std::string filePath);
 		~Header();
 
-		void Update();
-		void Load();
+		void UpdateToFile();
+		void LoadFromFile();
 
 		uint32_t GetFirstItemOffset() const;
 		uint32_t GetLastItemOffset() const;
@@ -58,7 +58,7 @@ namespace storage
 		std::string mStorageFilePath;
 
 		HeaderStruct mHeaderStruct;
-	}
+	};
 }
 
 #endif // STORAGE_FILE_H
