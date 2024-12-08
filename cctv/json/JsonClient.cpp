@@ -17,12 +17,21 @@ namespace cctv
 
 	void JsonClient::handleData()
 	{
-		char buffer[50]; // TODO: 버퍼에 쌓여있고, 늦게들어온다면, 버퍼 속 구분자(|)를 확인하는 로직 추가필요
+		char buffer[50];
 		int received = receiveData(buffer, sizeof(buffer)); 
 		if (received > 0)
 		{
-			nlohmann::json json = receiveJson(buffer, received);
-			saveJson(json);
+			try 
+			{
+				nlohmann::json json = receiveJson(buffer, received);
+				// JSON이 온전할 경우에만 저장
+				saveJson(json);
+			}
+			catch (const std::exception& e)
+			{
+				logger.Info("Retry parse JSON data: " + std::string(e.what()));
+				// 불완전한 데이터는 로그만 남기고 재시도 루프 유지
+			}
 		}
 	}
 

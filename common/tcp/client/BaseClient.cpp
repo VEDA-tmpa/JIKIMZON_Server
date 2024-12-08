@@ -13,8 +13,11 @@ namespace tcp
 		, mSocketFd(-1)
 		, mbClosed(true) 
 		, mCipherHandler(std::move(cipherHandler))
+		, mTlsHandler(std::make_unique<cipher::TlsClientHandler>())
 	{
 		logger.Debug("port: " + std::to_string(port));
+
+		mTlsHandler->Init();
 	}
 
 	BaseClient::~BaseClient()
@@ -36,7 +39,12 @@ namespace tcp
 	{
 		if (mbClosed == false)
 		{
+			// TLS shutdown
+			mTlsHandler->Shutdown();
+			
+			// TCP shutdown
 			close(mSocketFd);
+			
 			mbClosed = true;
 		}
 	}
@@ -64,12 +72,17 @@ namespace tcp
 		// 서버에 연결
 		if (connect(mSocketFd, (sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
 		{
-
 			logger.Error("connect() fail: " + std::to_string(mPort));
+			close(mSocketFd);
 			return;
 		}
-		mbClosed = false;
 		logger.Info("connect() success");
+
+		// TLS 핸드셰이크 수행
+		mTlsHandler->PerformTLSHandshake(mSocketFd);
+		logger.Info("TLS handshake successful");
+		
+		mbClosed = false;
 	}
 
 	int BaseClient::receiveData(void* buffer, size_t size)
@@ -78,10 +91,10 @@ namespace tcp
 
 		while (totalBytesReceived < size)
 		{
-			int bytesReceived = recv(mSocketFd,
-									 reinterpret_cast<char*>(buffer) + totalBytesReceived,
-									 size - totalBytesReceived,
-									 0);
+			int bytesReceived = SSL_read(mTlsHandler.get()->GetSSL(),
+										 reinterpret_cast<char*>(buffer) + totalBytesReceived,
+										 size - totalBytesReceived);
+
 			logger.Debug("bytesReceived: " + std::to_string(bytesReceived));
 			if (bytesReceived < 0)  // 에러 발생
 			{
