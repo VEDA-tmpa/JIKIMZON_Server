@@ -10,13 +10,26 @@ Save::Save(size_t cap) : mFile("json.dat", std::ios::in | std::ios::out | std::i
         throw std::runtime_error("Failed to open file");
     }
 
-    mItemOffsets.push(1);
+    mItemOffsets.emplace_back(1);
     
     std::vector<char> padding(mCapacity + 2, '\0');
     padding[0] = '[';
     padding[mCapacity - 1] = ']';
     mFile.seekp(0);
     mFile.write(padding.data(), mCapacity);
+}
+
+std::string Save::GetJson()
+{
+    auto end = mItemOffsets.back();
+    auto pre = --(--mItemOffsets.end());
+    size_t size = end - *pre - 1;
+
+    std::vector<char> buffer(size);
+    mFile.seekg(*pre);
+    mFile.read(buffer.data(), size);
+
+    return std::string(buffer.begin(), buffer.end());
 }
 
 void Save::SaveJson(std::string &data) {
@@ -37,17 +50,17 @@ void Save::SaveJson(std::string &data) {
         mFile.seekp(mItemOffsets.back());
         mFile.write(padding.data(), size);
 
-        mItemOffsets.push(1);
+        mItemOffsets.emplace_back(1);
 
         while (mItemOffsets.front() < mItemOffsets.back() + data.size())
         {
-            mItemOffsets.pop();
+            mItemOffsets.pop_front();
         }
     } 
 
     mFile.seekp(mItemOffsets.back());
     mFile.write(data.data(), data.size());
-    mItemOffsets.push(mItemOffsets.back() + data.size());
+    mItemOffsets.emplace_back(mItemOffsets.back() + data.size());
     
     int size = mItemOffsets.front() - mItemOffsets.back();
     size = abs(size);
@@ -68,7 +81,18 @@ void Save::SaveJson(std::string &data) {
     mFile.flush();
 }
 
-std::string Save::ReadJson(size_t size) {
+void Save::GetJson()
+{
+    auto end = --mItemOffsets.end();
+    auto pre = --end;
+    size_t size = *end - *pre;
+    std::vector<char> buffer(size);
+    mFile.seekg(0);
+    mFile.read(buffer.data(), size);
+}
+
+std::string Save::ReadJson(size_t size)
+{
     if (size > mCapacity)
     {
         throw std::runtime_error("Read size exceeds queue capacity");

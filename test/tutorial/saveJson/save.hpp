@@ -4,21 +4,21 @@
 #include <cstring>
 #include <string>
 #include <fstream>
-#include <queue>
+#include <deque>
 
 class Save
 {
 public:
     Save(size_t cap);
-
+    
     void SaveJson(std::string& data);
+    std::string GetJson();
     std::string ReadJson(size_t size);
+
 private:
     std::fstream mFile;
-
     size_t mCapacity;
-
-    std::queue<size_t> mItemOffsets;
+    std::deque<size_t> mItemOffsets;
 };
 
 #endif
