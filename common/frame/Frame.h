@@ -30,6 +30,8 @@ namespace frame
 		const Header& GetHeader() const; 
         const Body& GetBody() const;
 
+		Frame& operator=(Frame&& other);
+
 	private:
 		Header mHeader;
 		Body mBody;

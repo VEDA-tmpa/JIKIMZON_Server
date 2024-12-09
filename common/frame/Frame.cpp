@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <cstring>
+#include <utility>
 #include <cassert>
 
 namespace frame
@@ -66,4 +67,14 @@ namespace frame
 		std::vector<uint8_t> bodyBuffer(buffer.begin() + bodyStartIndex, buffer.begin() + bodyStartIndex + bodySize);
 		mBody.Deserialize(bodyBuffer);
 	}
+
+	Frame& Frame::operator=(Frame&& other)
+    {
+        if (this != &other)
+        {
+            mHeader = std::move(other.mHeader);
+            mBody = std::move(other.mBody);
+        }
+        return *this;
+    }
 }
