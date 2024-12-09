@@ -57,7 +57,7 @@ namespace cipher
 			std::cerr << "Failed get certificate" << std::endl;
 		}
 
-		const std::string keyPath = std::string(PROJECT_ROOT) + "/viewer/certs/server.cert";
+		const std::string keyPath = std::string(PROJECT_ROOT) + "/viewer/certs/server.key";
 		if (SSL_CTX_use_PrivateKey_file(mCTX, keyPath.c_str(), SSL_FILETYPE_PEM) <= 0)
 		{
 			std::cerr << "Failed get private key" << std::endl;
