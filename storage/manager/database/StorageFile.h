@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace storage
 {
@@ -26,7 +27,7 @@ namespace storage
 	|              ...             |
 	--------------------------------
 	*/
-	struct HeaderStruct
+	struct FileHeaderStruct
 	{
 		uint32_t FirstItemOffset;
 		uint32_t LastItemOffset;     
@@ -34,9 +35,15 @@ namespace storage
 		uint32_t PaddingOffset;
 	};
 
+	struct ItemHeaderStruct
+	{
+		uint32_t ItemSize;
+	}
+
 	struct ItemStruct
 	{
-		std::vector<uint8_t> data;
+		ItemHeaderStruct HeaderStruct;
+		std::vector<uint8_t> Data;
 	}
 
 	class StorageFile
@@ -59,7 +66,7 @@ namespace storage
 	private:
 		std::string mStorageFilePath;
 
-		HeaderStruct mHeaderStruct;
+		FileHeaderStruct mHeaderStruct;
 	};
 }
 
