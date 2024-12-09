@@ -39,6 +39,8 @@ namespace cctv
 		header.Deserialize(headerBuffer);
 		logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
 					", BodySize: " + std::to_string(header.GetBodySize()));
+		logger.Debug("Gop Start : " + std::to_string(header.GetGopStartFlag()));
+		logger.Debug("Gop Size : " + std::to_string(header.GetGopSize()));
 
 		// 3. Body 수신
 		logger.Info("Body receive");
