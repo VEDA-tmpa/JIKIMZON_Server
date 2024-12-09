@@ -66,6 +66,16 @@ namespace frame
 		return mHeader.timestamp;
 	}
 
+	uint8_t Header::GetGopStartFlag() const
+	{
+		return mHeader.gopStartFlag;
+	}
+
+	uint8_t Header::GetGopSize() const
+	{
+		return mHeader.gopSize;
+	}
+
 	void Header::SetHeader(HeaderStruct& header)
     {
         mHeader = header;
