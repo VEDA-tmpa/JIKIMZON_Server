@@ -33,7 +33,7 @@ namespace storage
 
 		uint32_t CurrentItemOffset; 
 
-		uint32_t PaddingItemOffset;
+		uint32_t PaddingOffset;
 	};
 
 	class Header
@@ -48,12 +48,12 @@ namespace storage
 		uint32_t GetFirstItemOffset() const;
 		uint32_t GetLastItemOffset() const;
 		uint32_t GetCurrentItemOffset() const;
-		uint32_t GetPaddingItemOffset() const;
+		uint32_t GetPaddingOffset() const;
 
 		void SetFirstItemOffset(uint32_t firstItemOffset);
 		void SetLastItemOffset(uint32_t lastItemOffset);
 		void SetCurrentItemOffset(uint32_t currentItemOffset);
-		void SetPaddingItemOffset(uint32_t paddingItemOffset);
+		void SetPaddingOffset(uint32_t paddingOffset);
 	
 	private:
 		std::string mStorageFilePath;

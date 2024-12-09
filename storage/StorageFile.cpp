@@ -58,9 +58,9 @@ namespace storage
 		return mHeaderStruct.CurrentItemOffset;
 	}
 
-	uint32_t Header::GetPaddingItemOffset() const
+	uint32_t Header::GetPaddingOffset() const
 	{
-		return mHeaderStruct.PaddingItemOffset;
+		return mHeaderStruct.PaddingOffset;
 	}
 
 	void Header::SetFirstItemOffset(uint32_t firstItemOffset)
@@ -78,8 +78,8 @@ namespace storage
 		mHeaderStruct.CurrentItemOffset = currentItemOffset;
 	}
 
-	void Header::SetPaddingItemOffset(uint32_t paddingItemOffset)
+	void Header::SetPaddingOffset(uint32_t paddingOffset)
 	{
-		mHeaderStruct.PaddingItemOffset = paddingItemOffset;
+		mHeaderStruct.PaddingOffset = paddingOffset;
 	}
 }

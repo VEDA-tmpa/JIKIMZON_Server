@@ -59,6 +59,11 @@ namespace storage
 			// 2. 메모리에 세팅해준다
 			mFileHeader.LoadFromFile();
 		}
+
+		logger.Debug("[StorageManager::StorageManager(const std::string ip)] mFileHeader.GetFirstItemOffset() : " + std::to_string(mFileHeader.GetFirstItemOffset()));
+		logger.Debug("[StorageManager::StorageManager(const std::string ip)] mFileHeader.GetLastItemOffset() : " + std::to_string(mFileHeader.GetLastItemOffset()));
+		logger.Debug("[StorageManager::StorageManager(const std::string ip)] mFileHeader.GetCurrentItemOffset() : " + std::to_string(mFileHeader.GetCurrentItemOffset()));
+		logger.Debug("[StorageManager::StorageManager(const std::string ip)] mFileHeader.GetPaddingOffset() : " + std::to_string(mFileHeader.GetPaddingOffset()));
 	}
 		
 	void StorageManager::SaveFrame(const frame::Frame& frame)
@@ -77,7 +82,7 @@ namespace storage
 
 		if (nextItemOffset + frame.GetSize() > storage::MAX_FILE_SIZE)
 		{
-			mFileHeader.SetPaddingItemOffset(nextItemOffset);
+			mFileHeader.SetPaddingOffset(nextItemOffset);
 
 			nextItemOffset = 0;
 			seekToOffsetFromHeader(storageFile, nextItemOffset);
@@ -100,10 +105,10 @@ namespace storage
 	
 		mFileHeader.UpdateToFile();
 
-		logger.Debug("mFileHeader.GetFirstItemOffset() : " + std::to_string(mFileHeader.GetFirstItemOffset()));
-		logger.Debug("mFileHeader.GetLastItemOffset() : " + std::to_string(mFileHeader.GetLastItemOffset()));
-		logger.Debug("mFileHeader.GetCurrentItemOffset() : " + std::to_string(mFileHeader.GetCurrentItemOffset()));
-		logger.Debug("mFileHeader.GetPaddingItemOffset() : " + std::to_string(mFileHeader.GetPaddingItemOffset()));
+		logger.Debug("[void StorageManager::SaveFrame(const frame::Frame& frame)] mFileHeader.GetFirstItemOffset() : " + std::to_string(mFileHeader.GetFirstItemOffset()));
+		logger.Debug("[void StorageManager::SaveFrame(const frame::Frame& frame)] mFileHeader.GetLastItemOffset() : " + std::to_string(mFileHeader.GetLastItemOffset()));
+		logger.Debug("[void StorageManager::SaveFrame(const frame::Frame& frame)] mFileHeader.GetCurrentItemOffset() : " + std::to_string(mFileHeader.GetCurrentItemOffset()));
+		logger.Debug("[void StorageManager::SaveFrame(const frame::Frame& frame)] mFileHeader.GetPaddingOffset() : " + std::to_string(mFileHeader.GetPaddingOffset()));
 	}
 
 	void StorageManager::writeToFile(std::ofstream& storageFile, frame::Frame& frame)
@@ -123,6 +128,8 @@ namespace storage
 		}
 
 		uint32_t currentItemOffset = mFileHeader.GetCurrentItemOffset();
+		logger.Debug("[void StorageManager::GetNextFrame(OUT frame::Frame& frame) const] currentItemOffset : " + std::to_string(currentItemOffset));
+
 		if (currentItemOffset == mFileHeader.GetLastItemOffset())
 		{
 			logger.Debug("No more frames to read");
@@ -136,7 +143,7 @@ namespace storage
 
 		{ // 다음 프레임의 오프셋 계산 (== 다음 아이템의 위치 계산)
 			uint32_t nextItemOffset = static_cast<uint32_t>(storageFile.tellg());
-			if (nextItemOffset == mFileHeader.GetPaddingItemOffset())
+			if (nextItemOffset == mFileHeader.GetPaddingOffset())
 			{
 				nextItemOffset = 0;
 			}
@@ -144,6 +151,11 @@ namespace storage
 		}
 
 		mFileHeader.UpdateToFile();
+
+		logger.Debug("[void StorageManager::GetNextFrame(OUT frame::Frame& frame) const] mFileHeader.GetFirstItemOffset() : " + std::to_string(mFileHeader.GetFirstItemOffset()));
+		logger.Debug("[void StorageManager::GetNextFrame(OUT frame::Frame& frame) const] mFileHeader.GetLastItemOffset() : " + std::to_string(mFileHeader.GetLastItemOffset()));
+		logger.Debug("[void StorageManager::GetNextFrame(OUT frame::Frame& frame) const] mFileHeader.GetCurrentItemOffset() : " + std::to_string(mFileHeader.GetCurrentItemOffset()));
+		logger.Debug("[void StorageManager::GetNextFrame(OUT frame::Frame& frame) const] mFileHeader.GetPaddingOffset() : " + std::to_string(mFileHeader.GetPaddingOffset()));
 	}
 
 	void StorageManager::seekToOffsetFromHeader(std::ifstream& storageFile, uint32_t offset)
