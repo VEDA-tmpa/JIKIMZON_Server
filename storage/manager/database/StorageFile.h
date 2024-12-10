@@ -66,7 +66,7 @@ namespace storage
 	private:
 		std::string mStorageFilePath;
 
-		FileHeaderStruct mHeaderStruct;
+		FileHeaderStruct mFileHeaderStruct;
 	};
 }
 
