@@ -13,7 +13,7 @@ namespace viewer
 	}
 
 	void VideoServer::handleData(int socketFd)
-	{
+	{	
 		streaming(socketFd); // TODO: storage 메서드를 이용하도록 리팩토링
 	}
 
@@ -70,12 +70,6 @@ namespace viewer
 					}
 					header.Deserialize(headerBuffer);
 
-					logger.Debug("header: frameId: " + std::to_string(header.GetFrameId()));
-					logger.Debug("header: imageHeight: " + std::to_string(header.GetImageHeight()));
-					logger.Debug("header: imageWidth: " + std::to_string(header.GetImageWidth()));
-					logger.Debug("header: bodySize: " + std::to_string(header.GetBodySize()));
-					logger.Debug("header: timestamp: " + header.GetTimestamp());
-
 					uint32_t bodySize = header.GetBodySize();
 					if (newBytes < sizeof(frame::HeaderStruct) + bodySize)
 					{
@@ -92,25 +86,37 @@ namespace viewer
 					}
 					frame::Body body;
 
-					// Body 암호화
-					std::vector<uint8_t> encryptedBody;
-					std::vector<uint8_t> nonce(12, 0x00);
-					mCipherHandler->Encrypt(bodyBuffer, encryptedBody, nonce);
+					// // Body 암호화
+					// std::vector<uint8_t> encryptedBody;
+					// std::vector<uint8_t> nonce(12, 0x00);
+					// mCipherHandler->Encrypt(bodyBuffer, encryptedBody, nonce);
 
-					body.SetBody(encryptedBody);
+					// body.SetBody(encryptedBody);
 
+					body.SetBody(bodyBuffer);
 
 					// Frame 직렬화 및 전송
 					frame::Frame frame(header, body);
+
+					logger.Debug("header: frameId: " + std::to_string(frame.GetHeader().GetFrameId()));
+					logger.Debug("header: imageHeight: " + std::to_string(frame.GetHeader().GetImageHeight()));
+					logger.Debug("header: imageWidth: " + std::to_string(frame.GetHeader().GetImageWidth()));
+					logger.Debug("header: bodySize: " + std::to_string(frame.GetHeader().GetBodySize()));
+					logger.Debug("header: timestamp: " + frame.GetHeader().GetTimestamp());
+					logger.Debug("header: gop start flag: " + std::to_string(frame.GetHeader().GetGopStartFlag()));
+					logger.Debug("header: gop size: " + std::to_string(frame.GetHeader().GetGopSize()));
+
 					std::vector<uint8_t> frameBuffer;
 					frame.Serialize(frameBuffer);
 
-					if (send(socketFd, frameBuffer.data(), frameBuffer.size(), 0) <= 0)
+					// if (send(socketFd, frameBuffer.data(), frameBuffer.size(), 0) <= 0)
+					if (SSL_write(mTlsHandler->GetSSL(), frameBuffer.data(), frameBuffer.size()) <= 0)
 					{
 						logger.Error("send() failed or client disconnected");
 						fclose(file);
 						return; // 클라이언트 연결 종료
 					}
+					// usleep(200000);
 
 					newBytes -= (sizeof(frame::HeaderStruct) + bodySize);
 				}

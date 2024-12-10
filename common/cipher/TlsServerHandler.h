@@ -16,6 +16,8 @@ namespace cipher
 		void PerformTLSHandshake(int clientFd);
 		void Shutdown();
 
+		SSL* GetSSL();
+		
 	private:
 		SSL_CTX* mCTX;
 		SSL* mSSL;

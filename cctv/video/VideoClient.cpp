@@ -13,11 +13,21 @@ namespace cctv
 
     void VideoClient::handleData()
     {
-		while (true)
+		// while (true)
+		// {
+		// 	frame::Frame frame = receiveFrame();
+		// 	saveFrame(frame);
+		// }
+
+		for (int i = 0 ; i < 300; ++i)
 		{
 			frame::Frame frame = receiveFrame();
-			saveFrame(frame);
+			if (i >= 150)
+			{
+				saveFrame(frame);
+			}
 		}
+		mbClosed = true;
 	}
 	
 	frame::Frame VideoClient::receiveFrame()
@@ -57,17 +67,18 @@ namespace cctv
 			throw std::runtime_error("Failed to receive body");
 		}
 
-		// Body 복호화
-		std::vector<uint8_t> outDecrypted;
-		decryptBody(bodyBuffer, header.GetTimestamp(), outDecrypted);
+		// // Body 복호화
+		// std::vector<uint8_t> outDecrypted;
+		// decryptBody(bodyBuffer, header.GetTimestamp(), outDecrypted);
 
 		// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
 		logger.Info("Body deserialize");
 		frame::Body body;
-		if (bodyResult > 0)
-		{
-			body.Deserialize(outDecrypted);
-		}
+		// if (bodyResult > 0)
+		// {
+		// 	body.Deserialize(outDecrypted);
+		// }
+		body.Deserialize(bodyBuffer);
 
 		// 5. Frame 객체 생성
 		logger.Info("Frame init");

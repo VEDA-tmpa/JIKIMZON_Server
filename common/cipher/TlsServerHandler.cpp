@@ -24,7 +24,11 @@ namespace cipher
 		if (SSL_accept(mSSL) <= 0)
 		{
 			ERR_print_errors_fp(stderr);
+			exit(EXIT_FAILURE);
 		}
+		std::cout << "Accept with " << SSL_get_cipher(mSSL) << " encryption" << std::endl;
+		
+		std::cout << "TlsServerHandler::PerformTLSHandshake(int clientFd) end" << std::endl;
 	}
 
 	void TlsServerHandler::Shutdown()
@@ -62,5 +66,10 @@ namespace cipher
 		{
 			std::cerr << "Failed get private key" << std::endl;
 		}
+	}
+
+	SSL* TlsServerHandler::GetSSL()
+	{
+		return mSSL;
 	}
 }
