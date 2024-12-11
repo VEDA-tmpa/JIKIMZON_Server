@@ -3,15 +3,35 @@
 
 #include "storage/manager/database/StorageFile.h"
 
-class BaseItem
+namespace storage
 {
-public:
-	virtual ~BaseItem() = default;
+	class BaseItem
+	{
+	public:
+		virtual ~BaseItem() = default;
 
-	virtual std::vector<uint8_t> Serialize() const = 0;
-	virtual void Deserialize(const std::vector<uint8_t>& rawData) = 0;
+		std::vector<uint8_t> Serialize() const
+		{
+			std::vector<uint8_t> serializedData;
+			
+			uint32_t itemSize = mItemStruct.HeaderStruct.ItemSize;
+			serializedData.insert(serializedData.end(), reinterpret_cast<uint8_t*>(&itemSize), reinterpret_cast<uint8_t*>(&itemSize) + sizeof(itemSize));
+			
+			serializedData.insert(serializedData.end(), mItemStruct.Data.begin(), mItemStruct.Data.end());
+			
+			return serializedData;
+		}
 
-	virtual size_t Size() const = 0;
-};
+		virtual void Deserialize(const std::vector<uint8_t>& rawData) = 0;
+
+		size_t Size() const
+		{
+			return sizeof(ItemHeaderStruct) + mItemStruct.HeaderStruct.ItemSize;
+		}
+	
+	protected:
+		ItemStruct mItemStruct;
+	};
+}
 
 #endif // BASE_ITEM_H

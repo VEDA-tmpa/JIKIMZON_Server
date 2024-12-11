@@ -5,35 +5,48 @@
 #include <string>
 
 #include "storage/manager/database/BaseItem.h"
+#include "common/log/Logger.h"
 
 namespace storage
 {
+
 	class JsonItem : public BaseItem 
 	{
 	public:
+		JsonItem() = default;
 		JsonItem(const nlohmann::json& json) 
 			: mJson(json)
 		{
+			logger.Debug("Json: " + json.dump(4));
+
 			mItemStruct.Data = serializeJsonToBytes(json);
 			mItemStruct.HeaderStruct.ItemSize = mItemStruct.Data.size();
+			
+			logger.Debug("Item Data Size: " + std::to_string(mItemStruct.HeaderStruct.ItemSize));
+			logger.Debug("Serialized Data: " + std::string(mItemStruct.Data.begin(), mItemStruct.Data.end()));
+			logger.Debug("Item total Size: " + std::to_string(sizeof(ItemHeaderStruct) + mItemStruct.HeaderStruct.ItemSize));
 		}
 
-		std::vector<uint8_t> Serialize() const override 
-		{
-			return mItemStruct.Data;
-		}
+		// void Deserialize(const std::vector<uint8_t>& rawData) override 
+		// {
+		// 	mItemStruct.HeaderStruct.ItemSize = *reinterpret_cast<const uint32_t*>(rawData.data());
+		// 	logger.Debug("Item Size: " + std::to_string(mItemStruct.HeaderStruct.ItemSize));
 
-		void Deserialize(const std::vector<uint8_t>& rawData) override 
+		// 	DeserializeData(rawData);
+		// }
+
+		/* Data 에 대해서만 역직렬화 하는 것 */
+		void Deserialize(const std::vector<uint8_t>& rawData) override
 		{
-			mItemStruct.HeaderStruct.ItemSize = *reinterpret_cast<const uint32_t*>(rawData.data());
 			mItemStruct.Data = rawData;
 
 			mJson = deserializeBytesToJson(rawData);
-		}
+			logger.Debug("Deserialized JSON: " + mJson.dump(4));
+		} 
 
-		size_t Size() const override 
+		nlohmann::json GetData() const
 		{
-			return mItemStruct.Data.size();
+			return mJson;
 		}
 
 	private:
@@ -45,19 +58,26 @@ namespace storage
 
 		nlohmann::json deserializeBytesToJson(const std::vector<uint8_t>& rawData) const
 		{
-			uint32_t itemSize = *reinterpret_cast<const uint32_t*>(rawData.data());
-
-			std::vector<uint8_t> jsonData(rawData.begin() + sizeof(ItemHeaderStruct), rawData.end());
-
-			std::string jsonString(jsonData.begin(), jsonData.end());
-			return nlohmann::json::parse(jsonString);
+			try
+			{
+				std::string jsonString(rawData.begin(), rawData.end());
+				return nlohmann::json::parse(jsonString);
+			}
+			catch (const nlohmann::json::parse_error& e)
+			{
+				logger.Error("JSON parse error: " + std::string(e.what()));
+				throw std::runtime_error("Failed to parse JSON data");
+			}
 		}
 
 	private:
-		nlohmann::json mJson;
+		static logger::Logger logger;
 
-		ItemStruct mItemStruct;
+		nlohmann::json mJson;
 	};
+
+	logger::Logger JsonItem::logger("JsonItem");
+
 }
 
 #endif // JSON_ITEM_H
