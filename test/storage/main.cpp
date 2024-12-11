@@ -295,7 +295,7 @@ void test_n_json_save(int test_item_count)
 		{
     		inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);	
 		}
-		
+
         storage::ItemHeaderStruct itemHeaderStruct;
         inFile.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(storage::ItemHeaderStruct));
         if (!inFile) 
@@ -329,15 +329,15 @@ void test_n_json_save(int test_item_count)
 
 int main()
 {
-	CleanUpTestFiles();
-	test_1_json_save();
+	// CleanUpTestFiles();
+	// test_1_json_save();
 
 	
-	CleanUpTestFiles();
-	test_3_json_save();
+	// CleanUpTestFiles();
+	// test_3_json_save();
 
 	CleanUpTestFiles();
-	test_n_json_save(999999);
+	test_n_json_save(30000);
 
 	// CleanUpTestFiles();
 
