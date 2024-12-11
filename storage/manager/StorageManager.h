@@ -49,7 +49,7 @@ namespace storage
 	StorageManager<ITEM>::StorageManager(const std::string ip) 
 		: mId(ip) 
 		, mStorageDirPath(std::string(PROJECT_ROOT) + "/storage/" + ip)
-		, mStorageFilePath(mStorageDirPath + "/video.h264")
+		, mStorageFilePath(mStorageDirPath + "/" + typeid(ITEM).name() + ".dat")
 		, mStorageFile(mStorageFilePath)
 	{
 		if (std::filesystem::exists(mStorageFilePath) == false)
