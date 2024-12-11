@@ -22,6 +22,7 @@ void CleanUpTestFiles()
 
 void test_1_json_save();
 void test_3_json_save();
+void test_n_json_save(int test_item_count);
 
 void test_1_json_save()
 {
@@ -259,16 +260,84 @@ void test_3_json_save()
 	// assert(originItem3.GetData() == outItem3.GetData());
 }
 
+void test_n_json_save(int test_item_count)
+{
+    std::string filePath = testDir + "/video.h264";
+    std::filesystem::create_directories(std::filesystem::path(filePath).parent_path());
+
+    storage::StorageManager<storage::JsonItem> storage(testIp);
+
+    for (int i = 0; i < test_item_count; ++i) {
+        nlohmann::json obj = {
+            {"id", i},
+            {"name", "user" + std::to_string(i)},
+            {"age", 30 + (i % 10)}
+        };
+        std::cout << "Target JSON " << i << ": " << obj.dump(4) << std::endl;
+
+        storage::JsonItem originItem(obj);
+        storage.SaveItem(originItem);
+    }
+
+    // Read saved items
+    std::ifstream inFile(filePath, std::ios::binary);
+    if (!inFile) 
+    {
+        throw std::runtime_error("Failed to open file for reading: " + filePath);
+    }
+
+
+    inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);
+	
+
+    for (int i = 0; i < test_item_count; ++i) {
+		if (inFile.tellg() == inFile.eof())
+		{
+    		inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);	
+		}
+		
+        storage::ItemHeaderStruct itemHeaderStruct;
+        inFile.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(storage::ItemHeaderStruct));
+        if (!inFile) 
+        {
+            throw std::runtime_error("File read failed.");
+        }
+
+        std::cout << "itemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize) << std::endl;
+
+        std::vector<uint8_t> rawData(itemHeaderStruct.ItemSize);
+        inFile.read(reinterpret_cast<char*>(rawData.data()), rawData.size());
+        if (!inFile) 
+        {
+            throw std::runtime_error("File read failed.");
+        }
+
+        storage::JsonItem item;
+        item.Deserialize(rawData);
+
+        // Verify the saved item
+        assert(item.GetData() == nlohmann::json({
+            {"id", i},
+            {"name", "user" + std::to_string(i)},
+            {"age", 30 + (i % 10)}
+        }));
+    }
+
+    inFile.close();
+}
+
+
 int main()
 {
-	// CleanUpTestFiles();
-	// test_1_json_save();
+	CleanUpTestFiles();
+	test_1_json_save();
 
 	
 	CleanUpTestFiles();
 	test_3_json_save();
 
-
+	CleanUpTestFiles();
+	test_n_json_save(999999);
 
 	// CleanUpTestFiles();
 
