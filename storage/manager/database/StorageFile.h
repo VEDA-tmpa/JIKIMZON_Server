@@ -187,217 +187,73 @@ namespace storage
 		mFileHeaderStruct.PaddingOffset = paddingOffset;
 	}
 
-	// template <typename ITEM>
-	// uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
-	// {
-	// 	std::ifstream file(mStorageFilePath, std::ios::binary);
-	// 	if (!file)
-	// 	{
-	// 		throw std::runtime_error("Failed to open file for reading.");
-	// 	}
-
-	// 	logger.Debug("item offset: " + std::to_string(itemOffset));
-
-	// 	file.seekg(sizeof(FileHeaderStruct) + itemOffset, std::ios::beg);
-
-	// 	ItemHeaderStruct itemHeaderStruct;
-	// 	file.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(ItemHeaderStruct));
-	// 	if (file.fail())
-	// 	{
-	// 		throw std::runtime_error("Failed to read item size.");
-	// 	}
-
-	// 	logger.Debug("itemHeaderStruct : " + std::to_string(itemHeaderStruct.ItemSize));
-
-
-	// 	return itemOffset + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize;
-	// }
-// 	template <typename ITEM>
-// 	uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
-// 	{
-// 		std::ifstream file(mStorageFilePath, std::ios::binary);
-// 		if (!file)
-// 		{
-// 			throw std::runtime_error("Failed to open file for reading: " + mStorageFilePath);
-// 		}
-
-// 		logger.Debug("item offset: " + std::to_string(itemOffset));
-// 		file.seekg(sizeof(FileHeaderStruct) + itemOffset, std::ios::beg);
-// 		logger.Debug("file.tellg() : " + std::to_string(file.tellg()));
-
-// 		// if (file.fail())
-// 		if (!file)
-// 		{
-// 			throw std::runtime_error("Failed to seek to the correct position in file.");
-// 		}
-
-// /// issue
-// 		ItemHeaderStruct itemHeaderStruct;
-// 		file.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(ItemHeaderStruct));
-// 		if (!file)
-// 		{
-// 			throw std::runtime_error("Failed to read item header.");
-// 		}
-
-// 		logger.Debug("itemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
-
-// 		uint32_t nextItemOffset = sizeof(FileHeaderStruct) + itemOffset + itemHeaderStruct.ItemSize;
-// 		logger.Debug("Next item offset: " + std::to_string(nextItemOffset));
-
-// 		return nextItemOffset;
-// 	}
-
-template <typename ITEM>
-uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
-{
-    // Open the file in binary mode
-    std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
-    if (!file)
-    {
-        throw std::runtime_error("Failed to open file: " + mStorageFilePath);
-    }
-
-    // Check the file size to ensure sufficient data is available
-    file.seekg(0, std::ios::end);
-    size_t fileSize = file.tellg();
-    logger.Debug("File size: " + std::to_string(fileSize));
-
-
-    logger.Debug("mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-	if (itemOffset == mFileHeaderStruct.PaddingOffset)
+	template <typename ITEM>
+	uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 	{
-		itemOffset = 0;
+		// Open the file in binary mode
+		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
+		if (!file)
+		{
+			throw std::runtime_error("Failed to open file: " + mStorageFilePath);
+		}
+
+		// Check the file size to ensure sufficient data is available
+		file.seekg(0, std::ios::end);
+		size_t fileSize = file.tellg();
+		logger.Debug("File size: " + std::to_string(fileSize));
+
+
+		logger.Debug("mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+		if (itemOffset == mFileHeaderStruct.PaddingOffset)
+		{
+			itemOffset = 0;
+		}
+
+
+		// Calculate the position to seek to
+		size_t seekPosition = sizeof(FileHeaderStruct) + itemOffset;
+		// if (seekPosition == file.eof()) 
+		// {
+		// 	return 0;
+		// }
+
+		logger.Debug("Seeking to position: " + std::to_string(seekPosition));
+
+		if (seekPosition >= fileSize)
+		{
+			throw std::runtime_error("Seek position is beyond the file size." + mStorageFilePath + "; Position: " + std::to_string(seekPosition));
+		}
+
+		// Seek to the desired position in the file
+		file.seekg(seekPosition, std::ios::beg);
+		if (!file.good())
+		{
+			throw std::runtime_error("Failed to seek to the correct position in file.");
+		}
+
+		// Read the item header
+		ItemHeaderStruct itemHeaderStruct;
+		logger.Debug("Reading ItemHeaderStruct at position: " + std::to_string(file.tellg()));
+
+		file.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(ItemHeaderStruct));
+		if (!file)
+		{
+			throw std::runtime_error("Failed to read item header. Current position: " + std::to_string(file.tellg()));
+		}
+
+		logger.Debug("ItemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
+
+		// Ensure the next item offset does not exceed the file size
+		uint32_t nextItemOffset = seekPosition  + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize - sizeof(FileHeaderStruct);
+		logger.Debug("Calculated next item offset: " + std::to_string(nextItemOffset));
+
+		if (nextItemOffset > storage::MAX_DATA_OFFSET)
+		{
+			throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
+		}
+
+		return nextItemOffset;
 	}
-
-
-    // Calculate the position to seek to
-    size_t seekPosition = sizeof(FileHeaderStruct) + itemOffset;
-	// if (seekPosition == file.eof()) 
-	// {
-	// 	return 0;
-	// }
-
-    logger.Debug("Seeking to position: " + std::to_string(seekPosition));
-
-    if (seekPosition >= fileSize)
-    {
-        throw std::runtime_error("Seek position is beyond the file size." + mStorageFilePath + "; Position: " + std::to_string(seekPosition));
-    }
-
-    // Seek to the desired position in the file
-    file.seekg(seekPosition, std::ios::beg);
-    if (!file.good())
-    {
-        throw std::runtime_error("Failed to seek to the correct position in file.");
-    }
-
-    // Read the item header
-    ItemHeaderStruct itemHeaderStruct;
-    logger.Debug("Reading ItemHeaderStruct at position: " + std::to_string(file.tellg()));
-
-    file.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(ItemHeaderStruct));
-    if (!file)
-    {
-        throw std::runtime_error("Failed to read item header. Current position: " + std::to_string(file.tellg()));
-    }
-
-    logger.Debug("ItemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
-
-    // Ensure the next item offset does not exceed the file size
-    uint32_t nextItemOffset = seekPosition  + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize - sizeof(FileHeaderStruct);
-    logger.Debug("Calculated next item offset: " + std::to_string(nextItemOffset));
-
-    if (nextItemOffset > storage::MAX_DATA_OFFSET)
-    {
-		// nextItemOffset = 0;
-        throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
-    }
-
-
-    // logger.Debug("mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-	// if (nextItemOffset == mFileHeaderStruct.PaddingOffset)
-	// {
-	// 	nextItemOffset = 0;
-	// }
-
-    return nextItemOffset;
-}
-
-// 	template <typename ITEM>
-// 	void StorageFile<ITEM>::AppendItem(const ITEM& item)
-// 	{
-// 		std::vector<uint8_t> serializedData = item.Serialize();
-// 		logger.Debug("Serialized data size: " + std::to_string(serializedData.size()));
-
-// 		std::ofstream file(mStorageFilePath, std::ios::binary);
-// 		if (!file)
-// 		{
-// 			throw std::runtime_error("Failed to open file for appending." + mStorageFilePath);
-// 		}
-
-// 		uint32_t itemInsertOffset = 0;
-
-// 		if (mFileHeaderStruct.LastItemOffset == INVALID_OFFSET && mFileHeaderStruct.FirstItemOffset == INVALID_OFFSET) // 비어있던 경우
-// 		{
-// 			itemInsertOffset = 0;
-
-// 			mFileHeaderStruct.FirstItemOffset = itemInsertOffset;
-// 			mFileHeaderStruct.LastItemOffset = itemInsertOffset;
-
-// 			goto fileWrite;
-// 		}
-// 		else if (mFileHeaderStruct.LastItemOffset == 0 && mFileHeaderStruct.FirstItemOffset == 0) // 아이템이 하나있던 경우
-// 		{			
-// 			itemInsertOffset = GetNextItemOffset(mFileHeaderStruct.LastItemOffset);
-
-// 			mFileHeaderStruct.LastItemOffset = itemInsertOffset;
-			
-// 			goto fileWrite;
-// 		}
-
-// 		itemInsertOffset = GetNextItemOffset(mFileHeaderStruct.LastItemOffset);
-// 		logger.Debug("Next item offset: " + std::to_string(itemInsertOffset));
-
-// 		if (itemInsertOffset + item.Size() > storage::MAX_FILE_SIZE)
-// 		{
-// 			mFileHeaderStruct.PaddingOffset = itemInsertOffset;
-// 			logger.Debug("File exceeds MAX_FILE_SIZE. Padding offset set to: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-
-// 			itemInsertOffset = 0;
-			
-// 			file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset);
-// 		}
-
-// 		if (itemInsertOffset <= mFileHeaderStruct.FirstItemOffset)
-// 		{
-// 			uint32_t itemOffset = mFileHeaderStruct.FirstItemOffset;
-// 			while ((itemOffset + item.Size() > itemOffset))
-// 			{
-// 				itemOffset = GetNextItemOffset(itemOffset);
-// 			}
-
-// 			mFileHeaderStruct.FirstItemOffset = itemOffset;
-// 			logger.Debug("Updated first item offset: " + std::to_string(mFileHeaderStruct.FirstItemOffset));
-// 		}
-
-// 		mFileHeaderStruct.LastItemOffset = itemInsertOffset;
-// 		logger.Debug("Updated last item offset: " + std::to_string(mFileHeaderStruct.LastItemOffset));
-
-// fileWrite:
-// 		file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset);
-// 		logger.Debug("file.tellp() : " + std::to_string(file.tellp()));
-		
-// 		file.write(reinterpret_cast<const char*>(serializedData.data()), serializedData.size());
-// 		if (file.fail())
-// 		{
-// 			throw std::runtime_error("Failed to append item." + mStorageFilePath);
-// 		}
-// 		logger.Debug("Successfully appended item.");
-
-
-// 		UpdateFileHeader();
-// 		logger.Debug("File header updated.");
-// 	}
 
 	template <typename ITEM>
 	void StorageFile<ITEM>::AppendItem(const ITEM& item)
