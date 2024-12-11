@@ -36,10 +36,10 @@ namespace storage
 		mutable storage::StorageFile<ITEM> mStorageFile;
 
 	private:
-		uint32_t mCurrentItemOffset;
+		mutable uint32_t mCurrentItemOffset;
 		mutable uint32_t mNextItemOffset;
 
-		uint32_t mNewItemOffset;
+		mutable uint32_t mNewItemOffset;
 	};
 
 	template <typename ITEM>
@@ -100,7 +100,7 @@ namespace storage
 		// mCurrentItemOffset = mStorageFile.mFileHeaderStruct.LastItemOffset; 
 		// mNewItemOffset = GetNewItemOffset();
 
-		// mNextItemOffset = GetNextItemOffset();
+		mNextItemOffset = 0;
 	}
 		
 	template <typename ITEM>

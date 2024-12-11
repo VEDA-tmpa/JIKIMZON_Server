@@ -474,6 +474,7 @@ fileWrite:
 
 
 		file.seekg(sizeof(FileHeaderStruct) + itemOffset, std::ios::beg);
+		logger.Debug("itemOffset : " + std::to_string(itemOffset));
 		logger.Debug("sizeof(FileHeaderStruct) + itemOffset : " + std::to_string(sizeof(FileHeaderStruct) + itemOffset));
 		logger.Debug("file.tellg() : " + std::to_string(file.tellg()));
 		std::vector<uint8_t> rawData;

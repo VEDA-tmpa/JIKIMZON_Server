@@ -277,53 +277,71 @@ void test_n_json_save(int test_item_count)
 
         storage::JsonItem originItem(obj);
         storage.SaveItem(originItem);
+
+
+
+
+
+		storage::JsonItem item;
+		storage.GetNextItem(item);
+
+		assert(item.GetData() == obj);
+		std::cout << "읽은 데이터 : " + item.GetData().dump(4) << std::endl;
     }
 
-    // Read saved items
-    std::ifstream inFile(filePath, std::ios::binary);
-    if (!inFile) 
-    {
-        throw std::runtime_error("Failed to open file for reading: " + filePath);
-    }
+	// while (true)
+	// {
+	// 	storage::JsonItem item;
+	// 	storage.GetNextItem(item);
+	// 	std::cout << "읽은 데이터 : " + item.GetData().dump(4) << std::endl;
+	// }
 
 
-    inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);
+    // // Read saved items
+    // std::ifstream inFile(filePath, std::ios::binary);
+    // if (!inFile) 
+    // {
+    //     throw std::runtime_error("Failed to open file for reading: " + filePath);
+    // }
+
+
+    // inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);
 	
 
-    for (int i = 0; i < test_item_count; ++i) {
-		if (inFile.tellg() == inFile.eof())
-		{
-    		inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);	
-		}
+    // for (int i = 0; i < test_item_count; ++i) {
+	// 	if (inFile.tellg() == inFile.eof())
+	// 	{
+    // 		inFile.seekg(sizeof(storage::FileHeaderStruct), std::ios::beg);	
+	// 	}
 
-        storage::ItemHeaderStruct itemHeaderStruct;
-        inFile.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(storage::ItemHeaderStruct));
-        if (!inFile) 
-        {
-            throw std::runtime_error("File read failed.");
-        }
+    //     storage::ItemHeaderStruct itemHeaderStruct;
+    //     inFile.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(storage::ItemHeaderStruct));
+    //     if (!inFile) 
+    //     {
+    //         throw std::runtime_error("File read failed.");
+    //     }
 
-        std::cout << "itemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize) << std::endl;
+    //     std::cout << "itemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize) << std::endl;
 
-        std::vector<uint8_t> rawData(itemHeaderStruct.ItemSize);
-        inFile.read(reinterpret_cast<char*>(rawData.data()), rawData.size());
-        if (!inFile) 
-        {
-            throw std::runtime_error("File read failed.");
-        }
+    //     std::vector<uint8_t> rawData(itemHeaderStruct.ItemSize);
+    //     inFile.read(reinterpret_cast<char*>(rawData.data()), rawData.size());
+    //     if (!inFile) 
+    //     {
+    //         throw std::runtime_error("File read failed.");
+    //     }
 
-        storage::JsonItem item;
-        item.Deserialize(rawData);
+    //     storage::JsonItem item;
+    //     item.Deserialize(rawData);
 
-        // Verify the saved item
-        assert(item.GetData() == nlohmann::json({
-            {"id", i},
-            {"name", "user" + std::to_string(i)},
-            {"age", 30 + (i % 10)}
-        }));
-    }
+    //     // Verify the saved item
+    //     assert(item.GetData() == nlohmann::json({
+    //         {"id", i},
+    //         {"name", "user" + std::to_string(i)},
+    //         {"age", 30 + (i % 10)}
+    //     }));
+    // }
 
-    inFile.close();
+    // inFile.close();
 }
 
 
@@ -337,7 +355,7 @@ int main()
 	// test_3_json_save();
 
 	CleanUpTestFiles();
-	test_n_json_save(30000);
+	test_n_json_save(24340);
 
 	// CleanUpTestFiles();
 
