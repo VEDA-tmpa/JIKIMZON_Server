@@ -79,7 +79,7 @@ void Storage::SaveFrame(const FrameHeader& header, const FrameBody& body)
     // 파일 스트림이 열려 있지 않거나 오류가 발생하면 다시 열기
     if (!mFileStream.is_open() || mFileStream.fail() || mFileStream.bad())
     {
-        mFileStream.open(mFilePath, std::ios::binary | std::ios::app);
+        mFileStream.open(mFilePath, std::ios::binary | std::ios::in | std::ios::out);
         if (!mFileStream)
         {
             throw std::runtime_error("Failed to reopen file stream.");

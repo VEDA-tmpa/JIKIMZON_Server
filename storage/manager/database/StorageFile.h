@@ -95,7 +95,7 @@ namespace storage
 	template <typename ITEM>
 	void StorageFile<ITEM>::UpdateFileHeader()
 	{
-		std::ofstream file(mStorageFilePath, std::ios::binary | std::ios::app);
+		std::ofstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
 		if (!file)
 		{
 			throw std::runtime_error("Failed to open file for writing.");
@@ -273,7 +273,7 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
     logger.Debug("ItemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
 
     // Ensure the next item offset does not exceed the file size
-    uint32_t nextItemOffset = seekPosition + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize;
+    uint32_t nextItemOffset = seekPosition  + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize - sizeof(FileHeaderStruct);
     logger.Debug("Calculated next item offset: " + std::to_string(nextItemOffset));
 
     if (nextItemOffset > fileSize)
@@ -411,7 +411,7 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 			itemInsertOffset = 0;
 
 
-std::ofstream file(mStorageFilePath, std::ios::binary);
+std::ofstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
 if (!file)
 {
 	throw std::runtime_error("Failed to open file for appending: " + mStorageFilePath);
@@ -419,7 +419,7 @@ if (!file)
 logger.Debug("Opened file for appending: " + mStorageFilePath);
 
 
-			file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset);
+			file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset, std::ios::beg);
 			logger.Debug("Seek position after padding: " + std::to_string(file.tellp()));
 file.close();
 		}
@@ -444,16 +444,21 @@ file.close();
 
 fileWrite:
 
-std::ofstream file(mStorageFilePath, std::ios::binary);
+std::ofstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
 if (!file)
 {
 	throw std::runtime_error("Failed to open file for appending: " + mStorageFilePath);
 }
 logger.Debug("Opened file for appending: " + mStorageFilePath);
-		file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset);
+		file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset, std::ios::beg);
+
+		logger.Debug("Seek position before writing target itemInsertOffset: " + std::to_string(itemInsertOffset));
+		logger.Debug("expected Seek position before writing: " + std::to_string(sizeof(FileHeaderStruct) + itemInsertOffset));
 		logger.Debug("Seek position before writing: " + std::to_string(file.tellp()));
 
 		file.write(reinterpret_cast<const char*>(serializedData.data()), serializedData.size());
+		logger.Debug("target size of serialized data : " + std::to_string(serializedData.size()));
+		logger.Debug("cursor tellp()  ; After file write: " + std::to_string(file.tellp()));
 		if (file.fail())
 		{
 			throw std::runtime_error("Failed to append item to file: " + mStorageFilePath);
@@ -461,7 +466,6 @@ logger.Debug("Opened file for appending: " + mStorageFilePath);
 		logger.Debug("Successfully appended item at offset: " + std::to_string(itemInsertOffset));
 
 
-		logger.Debug(" cursor tellp()  ; After file write:  " + std::to_string(file.tellp()));
 file.close();
 		UpdateFileHeader();
 		logger.Debug("File header updated.");
