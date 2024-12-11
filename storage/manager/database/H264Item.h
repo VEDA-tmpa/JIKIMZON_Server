@@ -18,7 +18,7 @@ namespace storage
 			{
 				// Validation
 				const frame::Header& headerOfFirstFrame = gop[0].GetHeader();
-				if (headerOfFirstFrame.GetGopStartFlag() != frame::GOP_START_FLAG::TRUE) 
+				if (static_cast<frame::GOP_START_FLAG>(headerOfFirstFrame.GetGopStartFlag()) != frame::GOP_START_FLAG::TRUE) 
 				{
 					throw std::invalid_argument("Invalid GOP start flag.");
 				}
@@ -33,9 +33,9 @@ namespace storage
 				for (const auto& frame : gop) 
 				{
 					std::vector<uint8_t> outFrameBuffer;
-					frame.Serialize(outFrameBuffer)
+					frame.Serialize(outFrameBuffer);
 
-					mItemStruct.Data.insert(mItem.data.end(), outFrameBuffer.begin(), outFrameBuffer.end());
+					mItemStruct.Data.insert(mItemStruct.Data.end(), outFrameBuffer.begin(), outFrameBuffer.end());
 				}
 
 				// setup ItemHeader
@@ -44,9 +44,9 @@ namespace storage
 		}
 
 		/* Data 에 대해서만 역직렬화 하는 것 */
-		void H264Item::Deserialize(const std::vector<uint8_t>& rawData) override 
+		void Deserialize(const std::vector<uint8_t>& rawData) override 
 		{
-			mItemStruct.Data = rawData;
+			mItemStruct.Data.insert(mItemStruct.Data.end(), rawData.begin(), rawData.end());
 
 			// Reconstruct GOP
 			mGop.clear();
@@ -55,9 +55,11 @@ namespace storage
 			{
 				frame::Frame frame;
 
-				// Deserialize individual frame
-				offset += frame.Deserialize(std::vector<uint8_t>(mItemStruct.Data.begin() + offset, mItemStruct.Data.end()));
+				std::vector<uint8_t> buffer(mItemStruct.Data.begin() + offset, mItemStruct.Data.end());
+				frame.Deserialize(buffer);
 				mGop.push_back(frame);
+
+				offset += frame.GetSize();
 			}
 		}
 

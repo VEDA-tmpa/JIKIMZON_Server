@@ -5,6 +5,9 @@
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
 
+#include "storage/manager/database/H264Item.h"
+#include "storage/manager/StorageManager.h"
+
 namespace viewer 
 {
 	class VideoServer : public tcp::BaseServer
@@ -20,6 +23,8 @@ namespace viewer
 		void handleData(int socketFd) override;
 
 	private:
+		storage::StorageManager<storage::H264Item> mStorageManager;
+
 		void streaming(int socketFd);
 	};
 }

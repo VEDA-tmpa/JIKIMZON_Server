@@ -50,7 +50,7 @@ namespace frame
 		uint8_t padding3[2];    // 2 bytes (for alignment)
 	};
 
-	enum GOP_START_FLAG { FALSE = 0, TRUE = 1 };
+	enum class GOP_START_FLAG : uint8_t { FALSE = 0, TRUE = 1 };
 	
 	class Header : public common::ISerializable
 	{

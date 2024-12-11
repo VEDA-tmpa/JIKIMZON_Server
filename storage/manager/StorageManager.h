@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <utility>
+#include <unistd.h>
 
 #include "common/frame/Frame.h"
 #include "common/log/Logger.h"
@@ -123,9 +124,17 @@ namespace storage
 	{
 		try
 		{
-			item = mStorageFile.ReadItem(mNextItemOffset);
-			mNextItemOffset = mStorageFile.GetNextItemOffset(mNextItemOffset);
-			logger.Info("Next item retrieved successfully.");
+			if (mNextItemOffset <= mStorageFile.GetLastItemOffset())
+			{
+				item = mStorageFile.ReadItem(mNextItemOffset);
+				mNextItemOffset = mStorageFile.GetNextItemOffset(mNextItemOffset);
+				logger.Info("Next item retrieved successfully.");
+			}
+			else
+			{
+				logger.Info("Waiting Next Item.");
+				usleep(100000);
+			}
 		}
 		catch (const std::exception& ex)
 		{

@@ -9,6 +9,7 @@ namespace viewer
 {
 	VideoServer::VideoServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
 		: BaseServer(port, std::move(cipherHandler))
+		, mStorageManager(fixture::cctv1.ip)
 	{
 	}
 
@@ -21,117 +22,26 @@ namespace viewer
 	{
 		logger.Info("streaming start");
 
-		const std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + fixture::cctv1.ip + ".h264";
-		logger.Info(filePath);
-
-		FILE* file = fopen(filePath.c_str(), "rb");
-		if (!file) 
-		{
-			logger.Error("Failed to open input file");
-			return;
-		}
-
-		std::vector<uint8_t> headerBuffer(sizeof(frame::HeaderStruct));
-		long lastFileSize = 0; // 마지막 읽은 위치 추적 변수
-
 		while (true)
 		{
-			if (fseek(file, 0, SEEK_END) != 0) // 파일 포인터를 파일의 끝으로 이동
-			{
-				logger.Error("fseek() failed");
-				return;
-			} 
-			long currentFileSize = ftell(file); // 파일 포인터의 위치
-			if (currentFileSize == -1) 
-			{
-				logger.Error("ftell() failed");
-				return;
-			}
+			storage::H264Item outItem;
+			mStorageManager.GetNextItem(outItem);
 
-			if (currentFileSize > lastFileSize) 
-			{
-				long newBytes = currentFileSize - lastFileSize;
+			std::vector<frame::Frame> gop = outItem.GetData();
 
-				if (fseek(file, lastFileSize, SEEK_SET) != 0) 
+
+			for (int i = 0; i < gop.size(); i++)
+			{
+				std::vector<uint8_t> buffer;
+				gop[i].Serialize(buffer);
+
+
+				if (SSL_write(mTlsHandler->GetSSL(), reinterpret_cast<char*>(buffer.data()), buffer.size()) <= 0)
 				{
-					logger.Error("fseek() to lastFileSize failed");
-					break;
+					logger.Error("send() failed or client disconnected");
+					return; // 클라이언트 연결 종료
 				}
-
-				// 새로운 데이터를 프레임 단위로 읽고 전송
-				while (newBytes >= sizeof(frame::HeaderStruct)) 
-				{
-					// 헤더 읽기
-					frame::Header header;
-					if (fread(headerBuffer.data(), sizeof(uint8_t), sizeof(frame::HeaderStruct), file) != sizeof(frame::HeaderStruct))
-					{
-						logger.Error("Failed to read header");
-						break;
-					}
-					header.Deserialize(headerBuffer);
-
-					uint32_t bodySize = header.GetBodySize();
-					if (newBytes < sizeof(frame::HeaderStruct) + bodySize)
-					{
-						logger.Info("Incomplete frame detected. Waiting for more data.");
-						break;
-					}
-
-					// Body 읽기
-					std::vector<uint8_t> bodyBuffer(bodySize);
-					if (fread(bodyBuffer.data(), sizeof(uint8_t), bodySize, file) != bodySize)
-					{
-						logger.Error("Failed to read body");
-						break;
-					}
-					frame::Body body;
-
-					// // Body 암호화
-					// std::vector<uint8_t> encryptedBody;
-					// std::vector<uint8_t> nonce(12, 0x00);
-					// mCipherHandler->Encrypt(bodyBuffer, encryptedBody, nonce);
-
-					// body.SetBody(encryptedBody);
-
-					body.SetBody(bodyBuffer);
-
-					// Frame 직렬화 및 전송
-					frame::Frame frame(header, body);
-
-					logger.Debug("header: frameId: " + std::to_string(frame.GetHeader().GetFrameId()));
-					logger.Debug("header: imageHeight: " + std::to_string(frame.GetHeader().GetImageHeight()));
-					logger.Debug("header: imageWidth: " + std::to_string(frame.GetHeader().GetImageWidth()));
-					logger.Debug("header: bodySize: " + std::to_string(frame.GetHeader().GetBodySize()));
-					logger.Debug("header: timestamp: " + frame.GetHeader().GetTimestamp());
-					logger.Debug("header: gop start flag: " + std::to_string(frame.GetHeader().GetGopStartFlag()));
-					logger.Debug("header: gop size: " + std::to_string(frame.GetHeader().GetGopSize()));
-
-					std::vector<uint8_t> frameBuffer;
-					frame.Serialize(frameBuffer);
-
-					// if (send(socketFd, frameBuffer.data(), frameBuffer.size(), 0) <= 0)
-					if (SSL_write(mTlsHandler->GetSSL(), frameBuffer.data(), frameBuffer.size()) <= 0)
-					{
-						logger.Error("send() failed or client disconnected");
-						fclose(file);
-						return; // 클라이언트 연결 종료
-					}
-					// usleep(200000);
-
-					newBytes -= (sizeof(frame::HeaderStruct) + bodySize);
-				}
-
-				// 마지막 읽은 위치 갱신
-				lastFileSize = currentFileSize - newBytes;
-			} 
-			else 
-			{
-				usleep(100000); // 0.1초 대기
 			}
-			
 		}
-
-		fclose(file);
-		logger.Info("streaming end");
 	}
 }

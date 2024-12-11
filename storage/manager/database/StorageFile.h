@@ -290,9 +290,10 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
     uint32_t nextItemOffset = seekPosition  + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize - sizeof(FileHeaderStruct);
     logger.Debug("Calculated next item offset: " + std::to_string(nextItemOffset));
 
-    if (nextItemOffset > fileSize)
+    if (nextItemOffset > storage::MAX_DATA_OFFSET)
     {
-        throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
+		nextItemOffset = 0;
+        // throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
     }
 
     return nextItemOffset;
