@@ -429,7 +429,7 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 			uint32_t itemOffset = mFileHeaderStruct.FirstItemOffset;
 			logger.Debug("Item insert offset is less than or equal to first item offset. Searching for valid offset.");
 
-			while ((itemOffset + item.Size() > itemOffset))
+			while ((itemInsertOffset + item.Size() > itemOffset))
 			{
 				itemOffset = GetNextItemOffset(itemOffset);
 				logger.Debug("New item offset: " + std::to_string(itemOffset));
