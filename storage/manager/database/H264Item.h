@@ -43,35 +43,14 @@ namespace storage
 			}
 		}
 
-		std::vector<uint8_t> H264Item::Serialize() const override
-		{
-			std::vector<uint8_t> serializedData;
-
-			// Serialize Item Header
-			uint32_t serializedItemSize = htonl(mItemStruct.HeaderStruct.ItemSize);
-			serializedData.insert(serializedData.end(),
-								  reinterpret_cast<const uint8_t*>(&serializedItemSize),
-								  reinterpret_cast<const uint8_t*>(&serializedItemSize) + sizeof(serializedItemSize));
-
-			// Serialize Frame Data
-			serializedData.insert(serializedData.end(), mItemStruct.Data.begin(), mItemStruct.Data.end());
-
-			return serializedData;
-		}
-
+		/* Data 에 대해서만 역직렬화 하는 것 */
 		void H264Item::Deserialize(const std::vector<uint8_t>& rawData) override 
 		{
-			size_t offset = 0;
-
-			mItemStruct.HeaderStruct.ItemSize = ntohl(*reinterpret_cast<const uint32_t*>(&rawData[offset]));
-			offset += sizeof(ItemHeaderStruct);
-
-			// Deserialize Frame Data
-			mItemStruct.Data = std::vector<uint8_t>(rawData.begin() + offset, rawData.end());
+			mItemStruct.Data = rawData;
 
 			// Reconstruct GOP
 			mGop.clear();
-			offset = 0;
+			size_t offset = 0;
 			while (offset < mItemStruct.Data.size())
 			{
 				frame::Frame frame;
