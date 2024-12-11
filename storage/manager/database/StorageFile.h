@@ -262,6 +262,14 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
     size_t fileSize = file.tellg();
     logger.Debug("File size: " + std::to_string(fileSize));
 
+
+    logger.Debug("mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+	if (itemOffset == mFileHeaderStruct.PaddingOffset)
+	{
+		itemOffset = 0;
+	}
+
+
     // Calculate the position to seek to
     size_t seekPosition = sizeof(FileHeaderStruct) + itemOffset;
 	// if (seekPosition == file.eof()) 
@@ -304,6 +312,13 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 		// nextItemOffset = 0;
         throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
     }
+
+
+    // logger.Debug("mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+	// if (nextItemOffset == mFileHeaderStruct.PaddingOffset)
+	// {
+	// 	nextItemOffset = 0;
+	// }
 
     return nextItemOffset;
 }
