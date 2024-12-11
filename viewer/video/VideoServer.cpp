@@ -33,6 +33,7 @@ namespace viewer
 			for (int i = 0; i < gop.size(); i++)
 			{
 				std::vector<uint8_t> buffer;
+				logger.Info("VideoServer::streaming() send frame id: " +std::to_string(gop[i].GetHeader().GetFrameId()));
 				gop[i].Serialize(buffer);
 
 

@@ -11,9 +11,9 @@
 namespace storage
 {
 	// constexpr uint64_t MAX_FILE_SIZE = 4L * 1024 * 1024 * 1024; // 4GB
-	constexpr uint64_t MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+	// constexpr uint64_t MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 	// constexpr uint32_t MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
-	// constexpr uint64_t MAX_FILE_SIZE = 0.1 * 1024 * 1024; // 0.1MB
+	constexpr uint32_t MAX_FILE_SIZE = 0.2L * 1024 * 1024; // 0.1MB
 
 	/*
 	------------ Header ------------
@@ -88,7 +88,7 @@ namespace storage
 
 		std::string mStorageFilePath;
 
-		FileHeaderStruct mFileHeaderStruct;
+		mutable FileHeaderStruct mFileHeaderStruct;
 	};
 
 	template <typename ITEM>
@@ -145,18 +145,27 @@ namespace storage
 	template <typename ITEM>
 	uint32_t StorageFile<ITEM>::GetFirstItemOffset() const
 	{
+		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
+		file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+
 		return mFileHeaderStruct.FirstItemOffset;
 	}
 
 	template <typename ITEM>
 	uint32_t StorageFile<ITEM>::GetLastItemOffset() const
 	{
+		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
+		file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+
 		return mFileHeaderStruct.LastItemOffset;
 	}
 
 	template <typename ITEM>
 	uint32_t StorageFile<ITEM>::GetPaddingOffset() const
 	{
+		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
+		file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+
 		return mFileHeaderStruct.PaddingOffset;
 	}
 
@@ -292,8 +301,8 @@ uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 
     if (nextItemOffset > storage::MAX_DATA_OFFSET)
     {
-		nextItemOffset = 0;
-        // throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
+		// nextItemOffset = 0;
+        throw std::runtime_error("Next item offset exceeds file size. Offset: " + std::to_string(nextItemOffset));
     }
 
     return nextItemOffset;

@@ -39,8 +39,6 @@ namespace storage
 	private:
 		mutable uint32_t mCurrentItemOffset;
 		mutable uint32_t mNextItemOffset;
-
-		mutable uint32_t mNewItemOffset;
 	};
 
 	template <typename ITEM>
@@ -96,12 +94,11 @@ namespace storage
 			// 1. 파일의 Header 영역에서 값을 읽어와서
 			// 2. 메모리에 세팅해준다
 			mStorageFile.ReadFileHeader();
+			
 		}
 
-		// mCurrentItemOffset = mStorageFile.mFileHeaderStruct.LastItemOffset; 
-		// mNewItemOffset = GetNewItemOffset();
-
-		mNextItemOffset = 0;
+		// mCurrentItemOffset = mStorageFile.GetLastItemOffset();
+		mNextItemOffset = mStorageFile.GetLastItemOffset();
 	}
 		
 	template <typename ITEM>
@@ -124,10 +121,13 @@ namespace storage
 	{
 		try
 		{
-			if (mNextItemOffset <= mStorageFile.GetLastItemOffset())
+			logger.Debug("GetNextItem() mNextItemOffset: " + std::to_string(mNextItemOffset));
+			logger.Debug("GetNextItem() mStorageFile.GetLastItemOffset: " + std::to_string(mStorageFile.GetLastItemOffset()));
+			if (mNextItemOffset != mStorageFile.GetLastItemOffset())
 			{
 				item = mStorageFile.ReadItem(mNextItemOffset);
 				mNextItemOffset = mStorageFile.GetNextItemOffset(mNextItemOffset);
+				
 				logger.Info("Next item retrieved successfully.");
 			}
 			else
