@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <cassert>
 #include <string>
+#include <cstring>
 
 #include "Header.h"
 

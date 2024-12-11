@@ -1,4 +1,5 @@
 #include "Body.h"
+#include <cstring>
 
 namespace frame
 {
