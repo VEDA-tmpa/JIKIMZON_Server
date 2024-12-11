@@ -13,20 +13,20 @@ namespace cctv
 
     void VideoClient::handleData()
     {
-		// while (true)
-		// {
-		// 	frame::Frame frame = receiveFrame();
-		// 	saveFrame(frame);
-		// }
-
-		for (int i = 0 ; i < 300; ++i)
+		while (true)
 		{
 			frame::Frame frame = receiveFrame();
-			if (i >= 150)
-			{
-				saveFrame(frame);
-			}
+			saveFrame(frame);
 		}
+
+		// for (int i = 0 ; i < 300; ++i)
+		// {
+		// 	frame::Frame frame = receiveFrame();
+		// 	if (i >= 150)
+		// 	{
+		// 		saveFrame(frame);
+		// 	}
+		// }
 		mbClosed = true;
 	}
 	

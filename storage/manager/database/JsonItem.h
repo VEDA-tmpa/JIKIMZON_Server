@@ -17,14 +17,14 @@ namespace storage
 		JsonItem(const nlohmann::json& json) 
 			: mJson(json)
 		{
-			logger.Debug("Json: " + json.dump(4));
+			// logger.Debug("Json: " + json.dump(4));
 
 			mItemStruct.Data = serializeJsonToBytes(json);
 			mItemStruct.HeaderStruct.ItemSize = mItemStruct.Data.size();
 			
-			logger.Debug("Item Data Size: " + std::to_string(mItemStruct.HeaderStruct.ItemSize));
-			logger.Debug("Serialized Data: " + std::string(mItemStruct.Data.begin(), mItemStruct.Data.end()));
-			logger.Debug("Item total Size: " + std::to_string(sizeof(ItemHeaderStruct) + mItemStruct.HeaderStruct.ItemSize));
+			// logger.Debug("Item Data Size: " + std::to_string(mItemStruct.HeaderStruct.ItemSize));
+			// logger.Debug("Serialized Data: " + std::string(mItemStruct.Data.begin(), mItemStruct.Data.end()));
+			// logger.Debug("Item total Size: " + std::to_string(sizeof(ItemHeaderStruct) + mItemStruct.HeaderStruct.ItemSize));
 		}
 
 		// void Deserialize(const std::vector<uint8_t>& rawData) override 
@@ -41,7 +41,7 @@ namespace storage
 			mItemStruct.Data = rawData;
 
 			mJson = deserializeBytesToJson(rawData);
-			logger.Debug("Deserialized JSON: " + mJson.dump(4));
+			// logger.Debug("Deserialized JSON: " + mJson.dump(4));
 		} 
 
 		nlohmann::json GetData() const
@@ -65,19 +65,19 @@ namespace storage
 			}
 			catch (const nlohmann::json::parse_error& e)
 			{
-				logger.Error("JSON parse error: " + std::string(e.what()));
+				// logger.Error("JSON parse error: " + std::string(e.what()));
 				throw std::runtime_error("Failed to parse JSON data");
 			}
 		}
 
 	private:
-		static logger::Logger logger;
+		// static logger::Logger logger;
 
 		nlohmann::json mJson;
 	};
 
-	logger::Logger JsonItem::logger("JsonItem");
 
+	// logger::Logger JsonItem::logger("JsonItem");
 }
 
 #endif // JSON_ITEM_H

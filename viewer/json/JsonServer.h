@@ -5,6 +5,9 @@
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
 
+#include "storage/manager/database/JsonItem.h"
+#include "storage/manager/StorageManager.h"
+
 namespace viewer 
 {
 	class JsonServer : public tcp::BaseServer
@@ -19,7 +22,10 @@ namespace viewer
 	protected:
 		void handleData(int socketFd) override;
 
+		
 	private:
+		storage::StorageManager<storage::JsonItem> mStorageManager;
+
 		void streaming(int socketFd);
 	};
 }
