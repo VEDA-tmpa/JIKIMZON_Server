@@ -82,13 +82,9 @@ namespace storage
 			}
 
 			{
-				// 1. 메모리에도 세팅해준다
 				mStorageFile.SetFirstItemOffset(INVALID_OFFSET);
 				mStorageFile.SetLastItemOffset(INVALID_OFFSET);
 				mStorageFile.SetPaddingOffset(INVALID_OFFSET);
-				
-				// 2. 파일의 Header 영역을 세팅한다
-				mStorageFile.UpdateFileHeader();
 			}
 		}
 		else
