@@ -37,7 +37,6 @@ namespace storage
 		mutable storage::StorageFile<ITEM> mStorageFile;
 
 	private:
-		mutable uint32_t mCurrentItemOffset;
 		mutable uint32_t mNextItemOffset;
 	};
 
@@ -97,7 +96,6 @@ namespace storage
 
 		}
 
-		// mCurrentItemOffset = mStorageFile.GetLastItemOffset();
 		mNextItemOffset = mStorageFile.GetLastItemOffset();
 	}
 		
@@ -133,7 +131,7 @@ namespace storage
 			else
 			{
 				logger.Info("Waiting Next Item.");
-				usleep(1000000);
+				usleep(1000000); // 1초
 			}
 		}
 		catch (const std::exception& ex)
