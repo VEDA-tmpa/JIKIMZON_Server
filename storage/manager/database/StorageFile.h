@@ -204,23 +204,8 @@ namespace storage
 		size_t fileSize = file.tellg();
 		logger.Debug("File size: " + std::to_string(fileSize));
 
-
-		// logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
-		// logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-		// if (itemOffset >= mFileHeaderStruct.PaddingOffset || itemOffset > fileSize)
-		// {
-		// 	itemOffset = 0;
-		// 	logger.Debug("GetNextItemOffset init itemOffset = 0 ");
-		// }
-
-
 		// Calculate the position to seek to
 		size_t seekPosition = sizeof(FileHeaderStruct) + itemOffset;
-		// if (seekPosition == file.eof()) 
-		// {
-		// 	return 0;
-		// }
-
 		logger.Debug("Seeking to position: " + std::to_string(seekPosition));
 
 		if (seekPosition >= fileSize)
@@ -244,11 +229,10 @@ namespace storage
 		{
 			throw std::runtime_error("Failed to read item header. Current position: " + std::to_string(file.tellg()));
 		}
-
 		logger.Debug("ItemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
 
 		// Ensure the next item offset does not exceed the file size
-		uint32_t nextItemOffset = seekPosition  + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize - sizeof(FileHeaderStruct);
+		uint32_t nextItemOffset = (seekPosition - sizeof(FileHeaderStruct)) + (sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize);
 		logger.Debug("Calculated next item offset: " + std::to_string(nextItemOffset));
 
 		if (nextItemOffset > storage::MAX_DATA_OFFSET)
