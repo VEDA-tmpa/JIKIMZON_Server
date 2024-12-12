@@ -94,7 +94,7 @@ namespace storage
 			// 1. 파일의 Header 영역에서 값을 읽어와서
 			// 2. 메모리에 세팅해준다
 			mStorageFile.ReadFileHeader();
-			
+
 		}
 
 		// mCurrentItemOffset = mStorageFile.GetLastItemOffset();
@@ -133,7 +133,7 @@ namespace storage
 			else
 			{
 				logger.Info("Waiting Next Item.");
-				usleep(100000);
+				usleep(1000000);
 			}
 		}
 		catch (const std::exception& ex)

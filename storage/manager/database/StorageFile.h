@@ -12,8 +12,10 @@ namespace storage
 {
 	// constexpr uint64_t MAX_FILE_SIZE = 4L * 1024 * 1024 * 1024; // 4GB
 	// constexpr uint64_t MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+	constexpr uint64_t MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 	// constexpr uint32_t MAX_FILE_SIZE = 1 * 1024 * 1024; // 1MB
-	constexpr uint32_t MAX_FILE_SIZE = 0.2L * 1024 * 1024; // 0.1MB
+	// constexpr uint32_t MAX_FILE_SIZE = 0.1L * 1024 * 1024; // 0.1MB
+	// constexpr uint32_t MAX_FILE_SIZE = 0.01L * 1024 * 1024; // 0.01MB
 
 	/*
 	------------ Header ------------
@@ -203,7 +205,8 @@ namespace storage
 		logger.Debug("File size: " + std::to_string(fileSize));
 
 
-		logger.Debug("mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+		logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
+		logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
 		if (itemOffset == mFileHeaderStruct.PaddingOffset)
 		{
 			itemOffset = 0;
@@ -358,6 +361,13 @@ fileWrite:
 		if (!file)
 		{
 			throw std::runtime_error("Failed to open file for reading.");
+		}
+
+		logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
+		logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+		if (itemOffset == mFileHeaderStruct.PaddingOffset)
+		{
+			itemOffset = 0;
 		}
 
 
