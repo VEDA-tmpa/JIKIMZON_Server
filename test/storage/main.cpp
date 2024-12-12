@@ -35,21 +35,17 @@ void test_concrete_size_json_n_save(int test_item_count)
 	for (int i = 0; i < test_item_count; ++i) 
 	{
 		nlohmann::json json;
-		{
-			json["frameId"] = i;
-			json["timestamp"] = timestamp;
-
-			nlohmann::json obj;
-			obj["className"] = "plastic";
-			obj["x"] = 0;
-			obj["y"] = 0;
-			obj["width"] = 0;
-			obj["height"] = 0;
-
-			json["object"].push_back(obj);
-
-			std::cout << json.dump(4) << std::endl;
-		}
+		json = {
+			{"frameId", i},
+			{"timestamp", timestamp},
+			{"object", {
+				{"className", "plastic"},
+				{"height", 000},
+				{"width", 000},
+				{"x", 000},
+				{"y", 000}
+			}}
+		};
 	
 		storage.SaveData(json);
 	}
@@ -93,7 +89,7 @@ int main()
 {
 	CleanUpTestFiles();
 	SetupTestFiles();
-	test_concrete_size_json_n_save(400);
+	test_concrete_size_json_n_save(500);
 
 	// CleanUpTestFiles();
 
