@@ -18,14 +18,13 @@ namespace cctv
     {
     public:
         VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
-        ~VideoClient();
+        ~VideoClient() = default;
 
     protected:
         void handleData() override;
 
     private:
 		storage::StorageManager<storage::H264Item> mStorageManager;
-		// void saveFrame(frame::Frame frame);
 		
 		frame::Frame receiveFrame();
 

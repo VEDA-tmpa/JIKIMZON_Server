@@ -15,7 +15,7 @@ namespace cctv
 		enum { JSON_DELIMITER = '|' };
 		
         JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
-        ~JsonClient();
+        ~JsonClient() = default;
 
     protected:
         void handleData() override;
@@ -26,7 +26,6 @@ namespace cctv
 		nlohmann::json receiveJson(const void* buffer, size_t size);
 
 		storage::StorageManager<storage::JsonItem> mStorageManager;
-		// void saveJson(nlohmann::json json);
 
 		std::string mDataBuffer;
     };

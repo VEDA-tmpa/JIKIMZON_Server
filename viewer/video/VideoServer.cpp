@@ -15,7 +15,7 @@ namespace viewer
 
 	void VideoServer::handleData(int socketFd)
 	{	
-		streaming(socketFd); // TODO: storage 메서드를 이용하도록 리팩토링
+		streaming(socketFd);
 	}
 
 	void VideoServer::streaming(int socketFd)

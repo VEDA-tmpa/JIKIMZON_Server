@@ -8,9 +8,7 @@ namespace cctv
 	{
 	}
 
-    VideoClient::~VideoClient() 
-	{
-	}
+
 
     void VideoClient::handleData()
     {
@@ -95,28 +93,6 @@ namespace cctv
 
 		return frame;
 	}
-
-	// void VideoClient::saveFrame(frame::Frame frame)
-	// {
-	// 	std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
-	// 	logger.Info("filePath: " + filePath);
-
-	// 	FILE* file = fopen(filePath.c_str(), "ab");
-	// 	if (!file)
-	// 	{
-	// 		logger.Error("Failed to open output file");
-	// 		return;
-	// 	}
-
-	// 	{
-	// 		std::vector<uint8_t> outFrameBuffer;
-	// 		frame.Serialize(outFrameBuffer);
-			
-	// 		storage::SaveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
-	// 	}
-
-	// 	fclose(file);
-	// }
 
 	void VideoClient::decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted)
 	{
