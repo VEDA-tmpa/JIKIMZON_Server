@@ -28,11 +28,10 @@ namespace tcp
 		int mServerSocketFd;
 
 		std::unique_ptr<cipher::ICiphable> mCipherHandler;
+		std::unique_ptr<cipher::TlsServerHandler> mTlsHandler; // TODO: 영향범위 부모클래스에서 처리하도록 수정해야함. 지금은 동작하도록 처리
 
 	private:
 		enum { BACK_LOG = 3 };
-
-		std::unique_ptr<cipher::TlsServerHandler> mTlsHandler;
 
 		void setupServer();
 	};

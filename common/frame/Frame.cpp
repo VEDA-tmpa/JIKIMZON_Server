@@ -8,38 +8,38 @@
 namespace frame
 {
 	Frame::Frame(Header serializedHeader, Body serializedBody)
-        : mHeader(serializedHeader)
-        , mBody(serializedBody)
-    {
-    }
+		: mHeader(serializedHeader)
+		, mBody(serializedBody)
+	{
+	}
 
-    size_t Frame::GetSize() const
-    {
-        return sizeof(HeaderStruct) + mHeader.GetBodySize();
-    }
+	size_t Frame::GetSize() const
+	{
+		return sizeof(HeaderStruct) + mHeader.GetBodySize();
+	}
 
-    const Header& Frame::GetHeader() const
-    {
-        return mHeader;
-    }
+	const Header& Frame::GetHeader() const
+	{
+		return mHeader;
+	}
 
-    const Body& Frame::GetBody() const
-    {
-        return mBody;
-    }
+	const Body& Frame::GetBody() const
+	{
+		return mBody;
+	}
 
-    void Frame::Serialize(std::vector<uint8_t>& OUT buffer) const
-    {
-        std::vector<uint8_t> headerBuffer;
-        std::vector<uint8_t> bodyBuffer;
+	void Frame::Serialize(std::vector<uint8_t>& OUT buffer) const
+	{
+		std::vector<uint8_t> headerBuffer;
+		std::vector<uint8_t> bodyBuffer;
 
-        mHeader.Serialize(headerBuffer);
-        mBody.Serialize(bodyBuffer);
+		mHeader.Serialize(headerBuffer);
+		mBody.Serialize(bodyBuffer);
 
-        buffer.clear();
-        buffer.insert(buffer.end(), headerBuffer.begin(), headerBuffer.end());
-        buffer.insert(buffer.end(), bodyBuffer.begin(), bodyBuffer.end());
-    }
+		buffer.clear();
+		buffer.insert(buffer.end(), headerBuffer.begin(), headerBuffer.end());
+		buffer.insert(buffer.end(), bodyBuffer.begin(), bodyBuffer.end());
+	}
 
 	void Frame::Deserialize(std::vector<uint8_t>& buffer)
 	{

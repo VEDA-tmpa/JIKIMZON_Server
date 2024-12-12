@@ -1,23 +1,39 @@
 #include "VideoClient.h"
 
+#include "common/frame/GOP.h"
+
 namespace cctv
 {
-    VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-        : BaseClient(host, port, std::move(cipherHandler)) 
+	VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
+		: BaseClient(host, port, std::move(cipherHandler)) 
+		, mStorageManager(host)
 	{
 	}
 
-    VideoClient::~VideoClient() 
+	void VideoClient::handleData()
 	{
-	}
-
-    void VideoClient::handleData()
-    {
 		while (true)
 		{
 			frame::Frame frame = receiveFrame();
-			saveFrame(frame);
+
+			frame::Header header = frame.GetHeader();
+			if (static_cast<frame::GOP_START_FLAG>(header.GetGopStartFlag()) == frame::GOP_START_FLAG::TRUE)
+			{
+				std::vector<frame::Frame> frames;
+				frames.reserve(header.GetGopSize());
+				frames.push_back(frame);
+
+				for (int i = 0; i < header.GetGopSize() - 1; ++i)
+				{
+					frames.push_back(receiveFrame());
+				}
+
+				frame::H264::GOP gop(frames);
+				mStorageManager.SaveData(gop);
+			}	
 		}
+
+		mbClosed = true;
 	}
 	
 	frame::Frame VideoClient::receiveFrame()
@@ -39,6 +55,8 @@ namespace cctv
 		header.Deserialize(headerBuffer);
 		logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
 					", BodySize: " + std::to_string(header.GetBodySize()));
+		logger.Debug("Gop Start : " + std::to_string(static_cast<int>(header.GetGopStartFlag())));
+		logger.Debug("Gop Size : " + std::to_string(header.GetGopSize()));
 
 		// 3. Body 수신
 		logger.Info("Body receive");
@@ -55,45 +73,24 @@ namespace cctv
 			throw std::runtime_error("Failed to receive body");
 		}
 
-		// Body 복호화
-		std::vector<uint8_t> outDecrypted;
-		decryptBody(bodyBuffer, header.GetTimestamp(), outDecrypted);
+		// // Body 복호화
+		// std::vector<uint8_t> outDecrypted;
+		// decryptBody(bodyBuffer, header.GetTimestamp(), outDecrypted);
 
 		// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
 		logger.Info("Body deserialize");
 		frame::Body body;
-		if (bodyResult > 0)
-		{
-			body.Deserialize(outDecrypted);
-		}
+		// if (bodyResult > 0)
+		// {
+		// 	body.Deserialize(outDecrypted);
+		// }
+		body.Deserialize(bodyBuffer);
 
 		// 5. Frame 객체 생성
 		logger.Info("Frame init");
 		frame::Frame frame(header, body);
 
 		return frame;
-	}
-
-	void VideoClient::saveFrame(frame::Frame frame)
-	{
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".h264";
-		logger.Info("filePath: " + filePath);
-
-		FILE* file = fopen(filePath.c_str(), "ab");
-		if (!file)
-		{
-			logger.Error("Failed to open output file");
-			return;
-		}
-
-		{
-			std::vector<uint8_t> outFrameBuffer;
-			frame.Serialize(outFrameBuffer);
-			
-			storage::SaveToFile(file, reinterpret_cast<const char*>(outFrameBuffer.data()), outFrameBuffer.size());
-		}
-
-		fclose(file);
 	}
 
 	void VideoClient::decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted)

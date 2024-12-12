@@ -29,5 +29,5 @@ namespace cipher
 		void createSSLContext();
 	};
 }
-    
+
 #endif // TLS_CLIENT_HANDLER_H

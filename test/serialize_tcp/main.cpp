@@ -11,7 +11,7 @@
 
 void handle_client(int client_sock, frame::Frame frame)
 {
-    std::cout << "Client connected" << std::endl;
+	std::cout << "Client connected" << std::endl;
 
 	std::vector<uint8_t> outSerializedFrame;
 	frame.Serialize(outSerializedFrame);
@@ -27,8 +27,8 @@ void handle_client(int client_sock, frame::Frame frame)
 		std::cout << "Sent " << bytesSent << " bytes to client" << std::endl;
 	}
 
-    close(client_sock);
-    std::cout << "Client disconnected" << std::endl;
+	close(client_sock);
+	std::cout << "Client disconnected" << std::endl;
 }
 
 int main()
@@ -108,7 +108,7 @@ int main()
 	handle_client(client_sock, originFrame);
 
 
-    // 5. 서버 소켓 닫기
-    close(server_sock);
-    return 0;
+	// 5. 서버 소켓 닫기
+	close(server_sock);
+	return 0;
 }

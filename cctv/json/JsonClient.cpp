@@ -7,12 +7,9 @@ namespace cctv
 	JsonClient::JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
 		: BaseClient(host, port, std::move(cipherHandler)) 
 		, mDataBuffer("")
+		, mStorageManager(host)
 	{
 		logger.Debug("json port: " + std::to_string(port));
-	}
-
-	JsonClient::~JsonClient() 
-	{
 	}
 
 	void JsonClient::handleData()
@@ -24,8 +21,8 @@ namespace cctv
 			try 
 			{
 				nlohmann::json json = receiveJson(buffer, received);
-				// JSON이 온전할 경우에만 저장
-				saveJson(json);
+		
+				mStorageManager.SaveData(json);
 			}
 			catch (const std::exception& e)
 			{
@@ -67,28 +64,5 @@ namespace cctv
 			logger.Warning("JSON parse error: " + std::string(e.what()));
 			throw std::runtime_error("Failed to parse JSON data.");
 		}
-	}
-
-	void JsonClient::saveJson(nlohmann::json json)
-	{
-		logger.Debug("Received JSON: " + json.dump(4));
-
-
-		std::string filePath = std::string(PROJECT_ROOT) + "/storage/" + mHost + ".json";
-		logger.Info("filePath: " + filePath);
-
-		FILE* file = fopen(filePath.c_str(), "ab");
-		if (!file)
-		{
-			logger.Error("Failed to open output file");
-			return;
-		}
-
-		{
-			std::string jsonString = json.dump();
-			storage::SaveToFile(file, jsonString.c_str(), jsonString.size());
-		}
-
-		fclose(file);
 	}
 }

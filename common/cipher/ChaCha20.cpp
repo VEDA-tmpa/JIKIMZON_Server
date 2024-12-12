@@ -21,25 +21,25 @@ namespace cipher
 	{
 		logger.Debug(filePath);
 
-        std::ifstream file(filePath, std::ios::binary);
-        if (file.is_open() == false) 
+		std::ifstream file(filePath, std::ios::binary);
+		if (file.is_open() == false) 
 		{
-            throw std::runtime_error("Failed to open key file: " + filePath);
-        }
+			throw std::runtime_error("Failed to open key file: " + filePath);
+		}
 
-        std::vector<uint8_t> key((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        file.close();
+		std::vector<uint8_t> key((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		file.close();
 
-        if (key.size() != 32) {
-            throw std::runtime_error("Key file must contain exactly 32 bytes for ChaCha20");
-        }
+		if (key.size() != 32) {
+			throw std::runtime_error("Key file must contain exactly 32 bytes for ChaCha20");
+		}
 
-        return key;
-    }
+		return key;
+	}
 
 	void ChaCha20::EncryptDecrypt(std::vector<uint8_t> nonce, 
-								  const std::vector<uint8_t>& input, 
-								  std::vector<uint8_t>& output)
+								const std::vector<uint8_t>& input, 
+								std::vector<uint8_t>& output)
 	{
 		EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
 		if (!ctx) 

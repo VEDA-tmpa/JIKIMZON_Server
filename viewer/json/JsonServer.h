@@ -1,9 +1,13 @@
 #ifndef VIDEO_SERVER_H
 #define VIDEO_SERVER_H
 
+#include <nlohmann/json.hpp>
+
 #include "common/tcp/server/BaseServer.h"
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
+
+#include "storage/manager/StorageManager.h"
 
 namespace viewer 
 {
@@ -19,7 +23,10 @@ namespace viewer
 	protected:
 		void handleData(int socketFd) override;
 
+		
 	private:
+		storage::StorageManager<nlohmann::json> mStorageManager;
+
 		void streaming(int socketFd);
 	};
 }
