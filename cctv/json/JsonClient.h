@@ -25,7 +25,8 @@ namespace cctv
 
 		nlohmann::json receiveJson(const void* buffer, size_t size);
 
-		storage::StorageManager<storage::JsonItem> mStorageManager;
+		// storage::StorageManager<storage::JsonItem> mStorageManager;
+		storage::StorageManager<nlohmann::json> mStorageManager;
 
 		std::string mDataBuffer;
     };

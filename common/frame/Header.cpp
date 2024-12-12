@@ -67,7 +67,7 @@ namespace frame
 		return mHeader.timestamp;
 	}
 
-	uint8_t Header::GetGopStartFlag() const
+	GOP_START_FLAG Header::GetGopStartFlag() const
 	{
 		return mHeader.gopStartFlag;
 	}

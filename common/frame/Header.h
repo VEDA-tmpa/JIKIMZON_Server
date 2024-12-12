@@ -66,7 +66,7 @@ namespace frame
 		uint16_t GetImageHeight() const;
 		uint8_t GetImageFormat() const;
 		std::string GetTimestamp() const;
-		uint8_t GetGopStartFlag() const;
+		GOP_START_FLAG GetGopStartFlag() const;
 		uint8_t GetGopSize() const;
 
 		void SetHeader(HeaderStruct& header);
