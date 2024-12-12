@@ -10,13 +10,13 @@
 
 namespace frame
 {
-    enum class ImageFormat : uint8_t
-    {
-        RAW = 0,
-        H264 = 1
-    };
+	enum class ImageFormat : uint8_t
+	{
+		RAW = 0,
+		H264 = 1
+	};
 
-    class Frame : public common::ISerializable
+	class Frame : public common::ISerializable
 	{
 	public:
 		Frame() = default;
@@ -28,7 +28,7 @@ namespace frame
 
 		size_t GetSize() const;
 		const Header& GetHeader() const; 
-        const Body& GetBody() const;
+		const Body& GetBody() const;
 
 	private:
 		Header mHeader;

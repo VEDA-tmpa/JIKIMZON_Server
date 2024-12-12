@@ -4,14 +4,14 @@
 
 namespace cctv
 {
-    VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-        : BaseClient(host, port, std::move(cipherHandler)) 
+	VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
+		: BaseClient(host, port, std::move(cipherHandler)) 
 		, mStorageManager(host)
 	{
 	}
 
-    void VideoClient::handleData()
-    {
+	void VideoClient::handleData()
+	{
 		while (true)
 		{
 			frame::Frame frame = receiveFrame();

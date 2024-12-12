@@ -9,18 +9,18 @@
 
 namespace cctv
 {
-    class JsonClient : public tcp::BaseClient
-    {
-    public:
+	class JsonClient : public tcp::BaseClient
+	{
+	public:
 		enum { JSON_DELIMITER = '|' };
 		
-        JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
-        ~JsonClient() = default;
+		JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		~JsonClient() = default;
 
-    protected:
-        void handleData() override;
+	protected:
+		void handleData() override;
 
-    private:
+	private:
 		static logger::Logger logger;
 
 		nlohmann::json receiveJson(const void* buffer, size_t size);
@@ -28,7 +28,7 @@ namespace cctv
 		storage::StorageManager<nlohmann::json> mStorageManager;
 
 		std::string mDataBuffer;
-    };
+	};
 }
 
 #endif /* JSON_CLIENT_H */

@@ -92,8 +92,8 @@ namespace tcp
 		while (totalBytesReceived < size)
 		{
 			int bytesReceived = SSL_read(mTlsHandler.get()->GetSSL(),
-										 reinterpret_cast<char*>(buffer) + totalBytesReceived,
-										 size - totalBytesReceived);
+										reinterpret_cast<char*>(buffer) + totalBytesReceived,
+										size - totalBytesReceived);
 
 			logger.Debug("bytesReceived: " + std::to_string(bytesReceived));
 			if (bytesReceived < 0)  // 에러 발생

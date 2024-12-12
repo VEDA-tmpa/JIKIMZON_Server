@@ -26,42 +26,42 @@
 
 void SendData(SOCKET mClientSock, std::vector<uint8_t>& data)
 {
-    if (mClientSock < 0)
-    {
-        std::cerr << "not valid client sock" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+	if (mClientSock < 0)
+	{
+		std::cerr << "not valid client sock" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 
-    // winsock의 send는 const char* 형식임
-    if (send(mClientSock, reinterpret_cast<const char*>(data.data()), data.size(), 0) < 0)
-    {
-        std::cerr << "Send failed with error: " << WSAGetLastError() << std::endl;
-    }
+	// winsock의 send는 const char* 형식임
+	if (send(mClientSock, reinterpret_cast<const char*>(data.data()), data.size(), 0) < 0)
+	{
+		std::cerr << "Send failed with error: " << WSAGetLastError() << std::endl;
+	}
 }
 
 int main(void) {
 
-    WSADATA wsaData;                        // WinSock 데이터 구조체
-    SOCKET mSockfd = INVALID_SOCKET;        // SOCKET 타입 사용
-    SOCKET mClientSock = INVALID_SOCKET;
+	WSADATA wsaData;                        // WinSock 데이터 구조체
+	SOCKET mSockfd = INVALID_SOCKET;        // SOCKET 타입 사용
+	SOCKET mClientSock = INVALID_SOCKET;
 
-    struct sockaddr_in mServerAddr;
-    struct sockaddr_in mClientAddr;
-    socklen_t mClientSockLen = sizeof(mClientAddr);
+	struct sockaddr_in mServerAddr;
+	struct sockaddr_in mClientAddr;
+	socklen_t mClientSockLen = sizeof(mClientAddr);
 
-    // Initialize Winsock
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-    {
-        std::cerr << "WSAStartup failed" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+	// Initialize Winsock
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		std::cerr << "WSAStartup failed" << std::endl;
+		exit(EXIT_FAILURE);
+	}
 
-    mSockfd = socket(AF_INET, SOCK_STREAM, 0);
-  	if (mSockfd == INVALID_SOCKET)
+	mSockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (mSockfd == INVALID_SOCKET)
 	{
 		std::cerr << "Socket creation failed with error: " << WSAGetLastError() << std::endl;
-        WSACleanup();
-        return EXIT_FAILURE;
+		WSACleanup();
+		return EXIT_FAILURE;
 	}
 
 	mServerAddr.sin_family = AF_INET;
@@ -69,68 +69,68 @@ int main(void) {
 	mServerAddr.sin_port = htons(PORT);
 
 	if (bind(mSockfd, (struct sockaddr*)&mServerAddr, sizeof(mServerAddr)) == SOCKET_ERROR)
-    {
-        std::cerr << "Bind failed with error: " << WSAGetLastError() << std::endl;
-        closesocket(mSockfd);
-        WSACleanup();
-        return EXIT_FAILURE;
-    }
+	{
+		std::cerr << "Bind failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(mSockfd);
+		WSACleanup();
+		return EXIT_FAILURE;
+	}
 
 	// Listen for incoming connections
 	if (listen(mSockfd, SOMAXCONN) == SOCKET_ERROR)
-    {
-        std::cerr << "Listen failed with error: " << WSAGetLastError() << std::endl;
-        closesocket(mSockfd);
-        WSACleanup();
-        return EXIT_FAILURE;
-    }
+	{
+		std::cerr << "Listen failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(mSockfd);
+		WSACleanup();
+		return EXIT_FAILURE;
+	}
 	printf("Waiting for a client to connect...\n");
 
 	// Accept a connection from client
 	mClientSock = accept(mSockfd, (struct sockaddr *)&mClientAddr, &mClientSockLen);
 	if (mClientSock == INVALID_SOCKET)
-    {
-        std::cerr << "Accept failed with error: " << WSAGetLastError() << std::endl;
-        closesocket(mSockfd);
-        WSACleanup();
-        return EXIT_FAILURE;
-    }
+	{
+		std::cerr << "Accept failed with error: " << WSAGetLastError() << std::endl;
+		closesocket(mSockfd);
+		WSACleanup();
+		return EXIT_FAILURE;
+	}
 	printf("Client connected!\n");
 
-    uint32_t frameId = 0;
+	uint32_t frameId = 0;
 
-    //
-    while (true)
-    {
-        std::vector<uint8_t> buffer;
-        std::vector<uint8_t> encryptedFrame(100, 5);
-        std::string timestamp = "20241125_123456.789";  // YYYYMMDD_HHMMSS.sss
+	//
+	while (true)
+	{
+		std::vector<uint8_t> buffer;
+		std::vector<uint8_t> encryptedFrame(100, 5);
+		std::string timestamp = "20241125_123456.789";  // YYYYMMDD_HHMMSS.sss
 
-        // frame header 설정
-        frame::HeaderStruct headerStruct{
-            .frameId = static_cast<uint32_t>(frameId),
-            .bodySize = static_cast<uint32_t>(encryptedFrame.size()),
-            .imageWidth = static_cast<uint16_t>(1280),
-            .imageHeight = static_cast<uint16_t>(720),
-            .imageFormat = frame::ImageFormat::H264,
-        };
-        std::strcpy(headerStruct.timestamp, timestamp.c_str());
+		// frame header 설정
+		frame::HeaderStruct headerStruct{
+			.frameId = static_cast<uint32_t>(frameId),
+			.bodySize = static_cast<uint32_t>(encryptedFrame.size()),
+			.imageWidth = static_cast<uint16_t>(1280),
+			.imageHeight = static_cast<uint16_t>(720),
+			.imageFormat = frame::ImageFormat::H264,
+		};
+		std::strcpy(headerStruct.timestamp, timestamp.c_str());
 
-        frame::Header header(headerStruct);
+		frame::Header header(headerStruct);
 
-        // frame body 설정
-        frame::Body body(encryptedFrame);
+		// frame body 설정
+		frame::Body body(encryptedFrame);
 
-        // Frame 객체 생성
-        frame::Frame frame(header, body);
+		// Frame 객체 생성
+		frame::Frame frame(header, body);
 
-        // Frame 객체 Serialize 후 전송
-        frame.Serialize(buffer);
-        SendData(mClientSock, buffer);
+		// Frame 객체 Serialize 후 전송
+		frame.Serialize(buffer);
+		SendData(mClientSock, buffer);
 
-        frameId += 1;
-        Sleep(100);
-    }
+		frameId += 1;
+		Sleep(100);
+	}
 
-    return 0;
+	return 0;
 }

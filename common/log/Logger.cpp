@@ -14,8 +14,8 @@ namespace logger
 		: mClassName(className) 
 	{
 		// Makefile에서 PROJECT_ROOT가 정의
-        string logFilePath = string(PROJECT_ROOT) + "/storage/log.txt";
-        mLogFile.open(logFilePath, ios_base::app);
+		string logFilePath = string(PROJECT_ROOT) + "/storage/log.txt";
+		mLogFile.open(logFilePath, ios_base::app);
 		if (mLogFile.is_open() == false) {
 			cerr << "Error opening log file" << endl;
 		}
