@@ -5,7 +5,6 @@
 
 #include "common/tcp/client/BaseClient.h"
 #include "storage/manager/StorageManager.h"
-#include "storage/manager/database/JsonItem.h"
 
 namespace cctv
 {
@@ -25,7 +24,6 @@ namespace cctv
 
 		nlohmann::json receiveJson(const void* buffer, size_t size);
 
-		// storage::StorageManager<storage::JsonItem> mStorageManager;
 		storage::StorageManager<nlohmann::json> mStorageManager;
 
 		std::string mDataBuffer;

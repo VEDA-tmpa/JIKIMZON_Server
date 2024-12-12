@@ -5,7 +5,6 @@
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
 
-#include "storage/manager/database/JsonItem.h"
 #include "storage/manager/StorageManager.h"
 
 namespace viewer 
@@ -24,7 +23,7 @@ namespace viewer
 
 		
 	private:
-		storage::StorageManager<storage::JsonItem> mStorageManager;
+		storage::StorageManager<nlohmann::json> mStorageManager;
 
 		void streaming(int socketFd);
 	};

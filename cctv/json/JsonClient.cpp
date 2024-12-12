@@ -22,10 +22,7 @@ namespace cctv
 			{
 				nlohmann::json json = receiveJson(buffer, received);
 		
-				mStorageManager.SaveItem(json);
-
-				// storage::JsonItem item(json);
-				// mStorageManager.SaveItem(item);
+				mStorageManager.SaveData(json);
 			}
 			catch (const std::exception& e)
 			{

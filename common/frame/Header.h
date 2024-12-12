@@ -8,6 +8,8 @@
 
 namespace frame
 {
+	enum class GOP_START_FLAG : uint8_t { FALSE = 0, TRUE = 1 };
+
 	/*
     ----------------------------------------------------------------
     |                      frameId (4 bytes)                       |
@@ -45,12 +47,11 @@ namespace frame
 		char timestamp[19];   	// 19 bytes
 		uint8_t padding2[1];  	// 1 byte (for alignment)
 
-		uint8_t gopStartFlag;   // 1 byte
+		GOP_START_FLAG gopStartFlag;   // 1 byte
 		uint8_t gopSize;        // 1 byte
 		uint8_t padding3[2];    // 2 bytes (for alignment)
 	};
 
-	enum class GOP_START_FLAG : uint8_t { FALSE = 0, TRUE = 1 };
 	
 	class Header : public common::ISerializable
 	{

@@ -12,6 +12,7 @@ namespace frame
 		class GOP
 		{
 		public:
+			GOP() = default;
 			GOP(const std::vector<frame::Frame>& gop);
 
 			std::vector<Frame> GetFrames();

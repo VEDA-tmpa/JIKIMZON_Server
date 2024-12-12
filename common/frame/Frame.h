@@ -10,7 +10,7 @@
 
 namespace frame
 {
-    enum ImageFormat : uint8_t
+    enum class ImageFormat : uint8_t
     {
         RAW = 0,
         H264 = 1

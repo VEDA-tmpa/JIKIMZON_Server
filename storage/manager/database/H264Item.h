@@ -15,32 +15,18 @@ namespace storage
 		H264Item(const frame::H264::GOP& gop)
 			: mGop(gop)
 		{
+			// Serialize the GOP
+			for (const auto& frame : mGop.GetFrames()) 
 			{
-				// Validation
-				const frame::Header& headerOfFirstFrame = gop[0].GetHeader();
-				if (headerOfFirstFrame.GetGopStartFlag() != frame::GOP_START_FLAG::TRUE) 
-				{
-					throw std::invalid_argument("Invalid GOP start flag.");
-				}
-				if (headerOfFirstFrame.GetGopSize() != gop.size()) 
-				{
-					throw std::invalid_argument("Mismatch between GOP size and frame count.");
-				}
+				std::vector<uint8_t> outFrameBuffer;
+				frame.Serialize(outFrameBuffer);
+
+				mItemStruct.Data.insert(mItemStruct.Data.end(), outFrameBuffer.begin(), outFrameBuffer.end());
 			}
 
-			{
-				// Serialize the GOP
-				for (const auto& frame : gop.GetFrames()) 
-				{
-					std::vector<uint8_t> outFrameBuffer;
-					frame.Serialize(outFrameBuffer);
-
-					mItemStruct.Data.insert(mItemStruct.Data.end(), outFrameBuffer.begin(), outFrameBuffer.end());
-				}
-
-				// setup ItemHeader
-				mItemStruct.HeaderStruct.ItemSize = mItemStruct.Data.size();
-			}
+			// setup ItemHeader
+			mItemStruct.HeaderStruct.ItemSize = mItemStruct.Data.size();
+		
 		}
 
 		/* Data 에 대해서만 역직렬화 하는 것 */
@@ -66,7 +52,7 @@ namespace storage
 			mGop = gop;
 		}
 
-		frame::H264::GOP GetData()
+		frame::H264::GOP GetData() const
 		{
 			return mGop;
 		}

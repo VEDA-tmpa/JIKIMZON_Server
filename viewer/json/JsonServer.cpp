@@ -24,11 +24,10 @@ namespace viewer
 
 		while (true)
 		{
-			storage::JsonItem outItem;
-			mStorageManager.GetNextItem(outItem);
+			nlohmann::json outJson;
+			mStorageManager.GetNextData(outJson);
 
-			nlohmann::json json = outItem.GetData();
-			std::string jsonStr = json.dump() + "|";
+			std::string jsonStr = outJson.dump() + "|";
 			if (SSL_write(mTlsHandler->GetSSL(), jsonStr.c_str(), jsonStr.size()) <= 0)
 			{
 				logger.Error("send() failed or client disconnected");
