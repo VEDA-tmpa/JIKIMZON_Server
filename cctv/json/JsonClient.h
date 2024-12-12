@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include "common/tcp/client/BaseClient.h"
+
 #include "storage/manager/StorageManager.h"
 
 namespace cctv

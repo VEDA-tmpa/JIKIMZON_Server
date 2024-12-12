@@ -7,10 +7,11 @@
 #include <cstdio>
 #include <vector>
 
+#include "common/frame/GOP.h"
+
 #include "common/tcp/client/BaseClient.h"
 #include "common/frame/Frame.h"
 #include "storage/manager/StorageManager.h"
-#include "storage/manager/database/H264Item.h"
 
 namespace cctv
 {
@@ -24,7 +25,7 @@ namespace cctv
         void handleData() override;
 
     private:
-		storage::StorageManager<storage::H264Item> mStorageManager;
+		storage::StorageManager<frame::H264::GOP> mStorageManager;
 		
 		frame::Frame receiveFrame();
 

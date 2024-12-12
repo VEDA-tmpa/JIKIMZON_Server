@@ -1,5 +1,7 @@
 #include "VideoClient.h"
 
+#include "common/frame/GOP.h"
+
 namespace cctv
 {
     VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
@@ -7,8 +9,6 @@ namespace cctv
 		, mStorageManager(host)
 	{
 	}
-
-
 
     void VideoClient::handleData()
     {
@@ -19,18 +19,17 @@ namespace cctv
 			frame::Header header = frame.GetHeader();
 			if (static_cast<frame::GOP_START_FLAG>(header.GetGopStartFlag()) == frame::GOP_START_FLAG::TRUE)
 			{
-				std::vector<frame::Frame> gop;
-				gop.reserve(header.GetGopSize());
-
-				gop.push_back(frame);
+				std::vector<frame::Frame> frames;
+				frames.reserve(header.GetGopSize());
+				frames.push_back(frame);
 
 				for (int i = 0; i < header.GetGopSize() - 1; ++i)
 				{
-					gop.push_back(receiveFrame());
+					frames.push_back(receiveFrame());
 				}
 
-				storage::H264Item item(gop);
-				mStorageManager.SaveItem(item);
+				frame::H264::GOP gop(frames);
+				mStorageManager.SaveData(gop);
 			}	
 		}
 
@@ -56,7 +55,7 @@ namespace cctv
 		header.Deserialize(headerBuffer);
 		logger.Debug("Header received. FrameId: " + std::to_string(header.GetFrameId()) +
 					", BodySize: " + std::to_string(header.GetBodySize()));
-		logger.Debug("Gop Start : " + std::to_string(header.GetGopStartFlag()));
+		logger.Debug("Gop Start : " + std::to_string(static_cast<int>(header.GetGopStartFlag())));
 		logger.Debug("Gop Size : " + std::to_string(header.GetGopSize()));
 
 		// 3. Body 수신

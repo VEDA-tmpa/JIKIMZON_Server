@@ -1,11 +1,12 @@
 #ifndef VIDEO_SERVER_H
 #define VIDEO_SERVER_H
 
+#include "common/frame/GOP.h"
+
 #include "common/tcp/server/BaseServer.h"
 #include "common/log/Logger.h"
 #include "common/cipher/ICiphable.h"
 
-#include "storage/manager/database/H264Item.h"
 #include "storage/manager/StorageManager.h"
 
 namespace viewer 
@@ -23,7 +24,7 @@ namespace viewer
 		void handleData(int socketFd) override;
 
 	private:
-		storage::StorageManager<storage::H264Item> mStorageManager;
+		storage::StorageManager<frame::H264::GOP> mStorageManager;
 
 		void streaming(int socketFd);
 	};
