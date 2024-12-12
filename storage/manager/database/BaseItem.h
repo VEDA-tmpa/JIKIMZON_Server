@@ -14,7 +14,7 @@ namespace storage
 		{
 			std::vector<uint8_t> serializedData;
 			
-			uint32_t itemSize = mItemStruct.HeaderStruct.ItemSize;
+			uint32_t itemSize = mItemStruct.HeaderStruct.DataSize + sizeof(ItemHeaderStruct);
 			serializedData.insert(serializedData.end(), reinterpret_cast<uint8_t*>(&itemSize), reinterpret_cast<uint8_t*>(&itemSize) + sizeof(itemSize));
 			
 			serializedData.insert(serializedData.end(), mItemStruct.Data.begin(), mItemStruct.Data.end());
@@ -26,7 +26,7 @@ namespace storage
 
 		size_t Size() const
 		{
-			return sizeof(ItemHeaderStruct) + mItemStruct.HeaderStruct.ItemSize;
+			return sizeof(ItemHeaderStruct) + mItemStruct.HeaderStruct.DataSize;
 		}
 	
 	protected:

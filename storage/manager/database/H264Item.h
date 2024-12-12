@@ -25,7 +25,7 @@ namespace storage
 			}
 
 			// setup ItemHeader
-			mItemStruct.HeaderStruct.ItemSize = mItemStruct.Data.size();
+			mItemStruct.HeaderStruct.DataSize = mItemStruct.Data.size();
 		}
 
 		/* Data 에 대해서만 역직렬화 하는 것 */

@@ -84,7 +84,6 @@ namespace storage
 			{
 				mStorageFile.SetFirstItemOffset(INVALID_OFFSET);
 				mStorageFile.SetLastItemOffset(INVALID_OFFSET);
-				mStorageFile.SetPaddingOffset(INVALID_OFFSET);
 			}
 		}
 		else
@@ -126,8 +125,8 @@ namespace storage
 			logger.Debug("GetNextItem() mStorageFile.GetLastItemOffset: " + std::to_string(mStorageFile.GetLastItemOffset()));
 			if (mCurrentItemOffset != mStorageFile.GetLastItemOffset())
 			{
-				std::vector<uint8_t> binaryData = mStorageFile.ReadItem(mCurrentItemOffset);
-				data = mItemFactory->Deserialize(binaryData);
+				std::vector<uint8_t> binaryItem = mStorageFile.ReadItem(mCurrentItemOffset);
+				data = mItemFactory->Deserialize(binaryItem);
 				logger.Info("Next data retrieved successfully.");
 				
 				mCurrentItemOffset = mStorageFile.GetNextItemOffset(mCurrentItemOffset);
