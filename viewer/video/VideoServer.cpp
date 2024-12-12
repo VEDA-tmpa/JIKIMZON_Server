@@ -30,7 +30,7 @@ namespace viewer
 			std::vector<frame::Frame> gop = outItem.GetData();
 
 
-			for (int i = 0; i < gop.size(); i++)
+			for (int i = 0; i < gop.size(); ++i)
 			{
 				std::vector<uint8_t> buffer;
 				logger.Info("VideoServer::streaming() send frame id: " +std::to_string(gop[i].GetHeader().GetFrameId()));
