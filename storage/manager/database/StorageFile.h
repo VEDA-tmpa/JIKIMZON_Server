@@ -192,7 +192,6 @@ namespace storage
 	template <typename ITEM>
 	uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 	{
-		// Open the file in binary mode
 		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
 		if (!file)
 		{
@@ -283,8 +282,6 @@ namespace storage
 
 			logger.Debug("FirstItemOffset set to: " + std::to_string(mFileHeaderStruct.FirstItemOffset));
 			logger.Debug("LastItemOffset set to: " + std::to_string(mFileHeaderStruct.LastItemOffset));
-
-			goto fileWrite;
 		}
 		else if (mFileHeaderStruct.LastItemOffset == 0 && mFileHeaderStruct.FirstItemOffset == 0) // 아이템이 하나있던 경우
 		{   
@@ -293,47 +290,43 @@ namespace storage
 
 			mFileHeaderStruct.LastItemOffset = itemInsertOffset;
 			logger.Debug("LastItemOffset updated to: " + std::to_string(mFileHeaderStruct.LastItemOffset));
-
-			goto fileWrite;
 		}
-		else
+		else // 두번째 이후 아이템 추가
 		{
-			// 두번째 이후 아이템 추가
 			itemInsertOffset = GetNextItemOffset(mFileHeaderStruct.LastItemOffset);
 			logger.Debug("Next item offset: " + std::to_string(itemInsertOffset));
-		}
 
-
-		if (itemInsertOffset + item.Size() >= storage::MAX_DATA_OFFSET)
-		{
-			mFileHeaderStruct.PaddingOffset = itemInsertOffset;
-			logger.Debug("File exceeds MAX_FILE_SIZE. Padding offset set to: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-
-			itemInsertOffset = 0;
-
-			file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset, std::ios::beg);
-			logger.Debug("Seek position after padding: " + std::to_string(file.tellp()));
-		}
-
-		if (itemInsertOffset <= mFileHeaderStruct.FirstItemOffset)
-		{
-			uint32_t itemOffset = mFileHeaderStruct.FirstItemOffset;
-			logger.Debug("Item insert offset is less than or equal to first item offset. Searching for valid offset.");
-
-			while ((itemInsertOffset + item.Size() > itemOffset))
+			if (itemInsertOffset + item.Size() >= storage::MAX_DATA_OFFSET)
 			{
-				itemOffset = GetNextItemOffset(itemOffset);
-				logger.Debug("New item offset: " + std::to_string(itemOffset));
+				mFileHeaderStruct.PaddingOffset = itemInsertOffset;
+				logger.Debug("File exceeds MAX_FILE_SIZE. Padding offset set to: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+
+				itemInsertOffset = 0;
+
+				file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset, std::ios::beg);
+				logger.Debug("Seek position after padding: " + std::to_string(file.tellp()));
 			}
 
-			mFileHeaderStruct.FirstItemOffset = itemOffset;
-			logger.Debug("FirstItemOffset updated to: " + std::to_string(mFileHeaderStruct.FirstItemOffset));
+			if (itemInsertOffset <= mFileHeaderStruct.FirstItemOffset)
+			{
+				uint32_t itemOffset = mFileHeaderStruct.FirstItemOffset;
+				logger.Debug("Item insert offset is less than or equal to first item offset. Searching for valid offset.");
+
+				while ((itemInsertOffset + item.Size() > itemOffset))
+				{
+					itemOffset = GetNextItemOffset(itemOffset);
+					logger.Debug("New item offset: " + std::to_string(itemOffset));
+				}
+
+				mFileHeaderStruct.FirstItemOffset = itemOffset;
+				logger.Debug("FirstItemOffset updated to: " + std::to_string(mFileHeaderStruct.FirstItemOffset));
+			}
+
+			mFileHeaderStruct.LastItemOffset = itemInsertOffset;
+			logger.Debug("LastItemOffset updated to: " + std::to_string(mFileHeaderStruct.LastItemOffset));
 		}
 
-		mFileHeaderStruct.LastItemOffset = itemInsertOffset;
-		logger.Debug("LastItemOffset updated to: " + std::to_string(mFileHeaderStruct.LastItemOffset));
-
-fileWrite:
+		// fileWrite
 		file.seekp(sizeof(FileHeaderStruct) + itemInsertOffset, std::ios::beg);
 
 		logger.Debug("Seek position before writing target itemInsertOffset: " + std::to_string(itemInsertOffset));
