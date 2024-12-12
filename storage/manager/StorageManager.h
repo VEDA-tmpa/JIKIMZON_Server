@@ -107,7 +107,7 @@ namespace storage
 		{
 			std::unique_ptr<BaseItem> item = mItemFactory->CreateItem(data);
 	
-			mStorageFile.AppendItem(*item);
+			mStorageFile.EnqueueItem(*item);
 			logger.Info("Item saved successfully.");
 		}
 		catch (const std::exception& ex)

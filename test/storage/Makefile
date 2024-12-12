@@ -6,13 +6,14 @@ INCLUDES := -I$(PROJECT_ROOT) -DPROJECT_ROOT=\"$(PROJECT_ROOT)\"
 
 # 컴파일러 설정
 CC = g++
-CFLAGS = -Wall -std=c++17 $(shell pkg-config --cflags nlohmann_json)
+CFLAGS = -std=c++17 $(shell pkg-config --cflags nlohmann_json)
 LDFLAGS = $(shell pkg-config --libs nlohmann_json)
 
 # 소스 파일 설정
 SRCS := $(PROJECT_ROOT)/common/frame/Frame.cpp \
 		$(PROJECT_ROOT)/common/frame/Header.cpp \
 		$(PROJECT_ROOT)/common/frame/Body.cpp \
+		$(PROJECT_ROOT)/common/frame/GOP.cpp \
 		$(PROJECT_ROOT)/common/log/Logger.cpp \
 		$(PROJECT_ROOT)/test/storage/main.cpp 
 
