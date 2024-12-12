@@ -15,7 +15,7 @@ namespace frame
 			GOP() = default;
 			GOP(const std::vector<frame::Frame>& gop);
 
-			std::vector<Frame> GetFrames();
+			std::vector<Frame> GetFrames() const;
 
 		private:
 			std::vector<Frame> mFrames;

@@ -16,7 +16,7 @@ namespace storage
 			: mGop(gop)
 		{
 			// Serialize the GOP
-			for (const auto& frame : mGop.GetFrames()) 
+			for (const frame::Frame frame : gop.GetFrames()) 
 			{
 				std::vector<uint8_t> outFrameBuffer;
 				frame.Serialize(outFrameBuffer);
@@ -26,7 +26,6 @@ namespace storage
 
 			// setup ItemHeader
 			mItemStruct.HeaderStruct.ItemSize = mItemStruct.Data.size();
-		
 		}
 
 		/* Data 에 대해서만 역직렬화 하는 것 */

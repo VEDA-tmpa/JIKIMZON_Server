@@ -100,6 +100,8 @@ namespace storage
 		}
 
 		mCurrentItemOffset = mStorageFile.GetLastItemOffset();
+
+		logger.Info("access storagePath: " + mStorageFilePath);
 	}
 		
 	template <typename Data>

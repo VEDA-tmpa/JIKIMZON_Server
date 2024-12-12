@@ -15,9 +15,11 @@ namespace frame
 			{
 				throw std::invalid_argument("Mismatch between GOP size and frame count.");
 			}
+
+			mFrames = gop;
 		}
 
-		std::vector<Frame> GOP::GetFrames()
+		std::vector<Frame> GOP::GetFrames() const
 		{
 			return mFrames;
 		}
