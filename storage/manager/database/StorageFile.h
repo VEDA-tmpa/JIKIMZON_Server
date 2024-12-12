@@ -205,12 +205,13 @@ namespace storage
 		logger.Debug("File size: " + std::to_string(fileSize));
 
 
-		logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
-		logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-		if (itemOffset == mFileHeaderStruct.PaddingOffset)
-		{
-			itemOffset = 0;
-		}
+		// logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
+		// logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+		// if (itemOffset >= mFileHeaderStruct.PaddingOffset || itemOffset > fileSize)
+		// {
+		// 	itemOffset = 0;
+		// 	logger.Debug("GetNextItemOffset init itemOffset = 0 ");
+		// }
 
 
 		// Calculate the position to seek to

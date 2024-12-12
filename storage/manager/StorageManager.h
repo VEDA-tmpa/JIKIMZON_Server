@@ -129,11 +129,10 @@ namespace storage
 			if (mCurrentItemOffset != mStorageFile.GetLastItemOffset())
 			{
 				std::vector<uint8_t> binaryData = mStorageFile.ReadItem(mCurrentItemOffset);
-				mCurrentItemOffset = mStorageFile.GetNextItemOffset(mCurrentItemOffset);
-				
 				data = mItemFactory->Deserialize(binaryData);
-
 				logger.Info("Next data retrieved successfully.");
+				
+				mCurrentItemOffset = mStorageFile.GetNextItemOffset(mCurrentItemOffset);
 			}
 			else
 			{
