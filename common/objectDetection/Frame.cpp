@@ -8,12 +8,12 @@ namespace objectDetection
 		json["timestamp"] = mFrameStruct.timestamp;
 		
 		json["objects"] = nlohmann::json::array();
-        for (const auto& object : GetObjects(mFrameStruct))
-        {
-            nlohmann::json outObjectJson;
-            object.ToJson(outObjectJson);
-            json["objects"].push_back(outObjectJson);
-        }
+		for (const auto& object : GetObjects(mFrameStruct))
+		{
+			nlohmann::json outObjectJson;
+			object.ToJson(outObjectJson);
+			json["objects"].push_back(outObjectJson);
+		}
 	}
 
 	void Frame::FromJson(const nlohmann::json& json)
@@ -42,12 +42,12 @@ namespace objectDetection
 		return mFrameStruct.frameId; 
 	}
 
-    const std::string& Frame::GetTimestamp() const 
+	const std::string& Frame::GetTimestamp() const 
 	{ 
 		return mFrameStruct.timestamp; 
 	}
 
-    const std::vector<ObjectStruct>& Frame::GetObjectStructs() const 
+	const std::vector<ObjectStruct>& Frame::GetObjectStructs() const 
 	{
 		return mFrameStruct.objects; 
 	}

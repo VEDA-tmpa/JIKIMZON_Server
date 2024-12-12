@@ -6,27 +6,27 @@ using json = nlohmann::json;
 
 const auto JSON_INDENT = 2;
 const std::string strJson = R"(
-    {
-      "id" : 123456,
-      "res" : 111.222,
-      "name" : "Example Json",
-      "desc" : "Hello, SnowDeer",
-      "data" : [
-        {
-          "id" : 101,
-          "name" : "snowdeer"
-        },
-        {
-          "id" : 202,
-          "name" : "ice-rabbit"
-        }
-      ],
-      "info" : {
-        "notebook" : "macbook m1 pro",
-        "address" : "Seoul"
-      }
-    }
-  )";
+	{
+	"id" : 123456,
+	"res" : 111.222,
+	"name" : "Example Json",
+	"desc" : "Hello, SnowDeer",
+	"data" : [
+		{
+		"id" : 101,
+		"name" : "snowdeer"
+		},
+		{
+		"id" : 202,
+		"name" : "ice-rabbit"
+		}
+	],
+	"info" : {
+		"notebook" : "macbook m1 pro",
+		"address" : "Seoul"
+	}
+	}
+)";
 
 void createJsonObjectTest()
 {
@@ -58,16 +58,16 @@ void createMixedJsonObjectTest()
 	std::cout << "### Create Mixed JSON Object ###" << std::endl;
 
 	json obj1 = {{"id", 1},
-				 {"name", "snowdeer"},
-				 {"age", 45}};
+				{"name", "snowdeer"},
+				{"age", 45}};
 
 	json obj2 = {{"id", 2},
-				 {"name", "ice-rabbit"},
-				 {"age", 32}};
+				{"name", "ice-rabbit"},
+				{"age", 32}};
 
 	json obj3 = {{"id", 3},
-				 {"name", "fire-bat"},
-				 {"age", 28}};
+				{"name", "fire-bat"},
+				{"age", 28}};
 
 	json objs;
 	objs.push_back(obj1);
@@ -85,7 +85,7 @@ void parseJsonTest()
 	std::cout << j.dump(JSON_INDENT) << std::endl;
 	std::cout << j["data"].dump(JSON_INDENT) << std::endl;
 	std::cout << j["datxxx"].dump(JSON_INDENT) << std::endl; // 잘못된 Key에 대해서는 null
-															 //  std::cout << j["data"]["name"].dump(JSON_INDENT) << std::endl;    // 배열을 이런 식으로 접근하면 Exception
+															//  std::cout << j["data"]["name"].dump(JSON_INDENT) << std::endl;    // 배열을 이런 식으로 접근하면 Exception
 	std::cout << j["data"][0]["name"].dump(JSON_INDENT) << std::endl;
 }
 
@@ -112,7 +112,7 @@ std::string getTypeOfValue(json value)
 void getKeyValueListTest()
 {
 	std::cout << "### Key Value Test ###" << std::endl
-			  << std::endl;
+			<< std::endl;
 	
 
 	auto j = json::parse(strJson);

@@ -83,7 +83,7 @@ namespace storage
 		uint32_t GetNextItemOffset(uint32_t itemOffset) const;
 
 		void AppendItem(const ITEM& item);
-		ITEM ReadItem(uint32_t itemOffset) const;
+		std::vector<uint8_t> ReadItem(uint32_t itemOffset) const;
 
 	private:
 		static logger::Logger logger;
@@ -192,6 +192,7 @@ namespace storage
 	template <typename ITEM>
 	uint32_t StorageFile<ITEM>::GetNextItemOffset(uint32_t itemOffset) const
 	{
+		// Open the file in binary mode
 		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
 		if (!file)
 		{
@@ -203,22 +204,8 @@ namespace storage
 		size_t fileSize = file.tellg();
 		logger.Debug("File size: " + std::to_string(fileSize));
 
-
-		logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
-		logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
-		if (itemOffset == mFileHeaderStruct.PaddingOffset)
-		{
-			itemOffset = 0;
-		}
-
-
 		// Calculate the position to seek to
 		size_t seekPosition = sizeof(FileHeaderStruct) + itemOffset;
-		// if (seekPosition == file.eof()) 
-		// {
-		// 	return 0;
-		// }
-
 		logger.Debug("Seeking to position: " + std::to_string(seekPosition));
 
 		if (seekPosition >= fileSize)
@@ -242,11 +229,10 @@ namespace storage
 		{
 			throw std::runtime_error("Failed to read item header. Current position: " + std::to_string(file.tellg()));
 		}
-
 		logger.Debug("ItemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
 
 		// Ensure the next item offset does not exceed the file size
-		uint32_t nextItemOffset = seekPosition  + sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize - sizeof(FileHeaderStruct);
+		uint32_t nextItemOffset = (seekPosition - sizeof(FileHeaderStruct)) + (sizeof(ItemHeaderStruct) + itemHeaderStruct.ItemSize);
 		logger.Debug("Calculated next item offset: " + std::to_string(nextItemOffset));
 
 		if (nextItemOffset > storage::MAX_DATA_OFFSET)
@@ -348,50 +334,55 @@ namespace storage
 
 
 	template <typename ITEM>
-	ITEM StorageFile<ITEM>::ReadItem(uint32_t itemOffset) const
+	std::vector<uint8_t> StorageFile<ITEM>::ReadItem(uint32_t itemOffset) const
 	{
-		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
+		std::vector<uint8_t> out; // 반환할 데이터를 담을 벡터
+
+		// 파일 열기
+		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in);
 		if (!file)
 		{
 			throw std::runtime_error("Failed to open file for reading.");
 		}
 
-		logger.Debug("GetNextItemOffset init itemOffset " + std::to_string(itemOffset));
-		logger.Debug("GetNextItemOffset init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+		// 로그 출력
+		logger.Debug("ReadItem init itemOffset: " + std::to_string(itemOffset));
+		logger.Debug("ReadItem init mFileHeaderStruct.PaddingOffset: " + std::to_string(mFileHeaderStruct.PaddingOffset));
+
+		// PaddingOffset 처리
 		if (itemOffset == mFileHeaderStruct.PaddingOffset)
 		{
 			itemOffset = 0;
 		}
 
-
+		// 파일 포인터 이동
 		file.seekg(sizeof(FileHeaderStruct) + itemOffset, std::ios::beg);
-		logger.Debug("itemOffset : " + std::to_string(itemOffset));
-		logger.Debug("sizeof(FileHeaderStruct) + itemOffset : " + std::to_string(sizeof(FileHeaderStruct) + itemOffset));
-		logger.Debug("file.tellg() : " + std::to_string(file.tellg()));
-		std::vector<uint8_t> rawData;
+		logger.Debug("itemOffset: " + std::to_string(itemOffset));
+		logger.Debug("sizeof(FileHeaderStruct) + itemOffset: " + std::to_string(sizeof(FileHeaderStruct) + itemOffset));
+		logger.Debug("file.tellg(): " + std::to_string(file.tellg()));
 
+		// 헤더 읽기
 		ItemHeaderStruct itemHeaderStruct;
 		file.read(reinterpret_cast<char*>(&itemHeaderStruct), sizeof(ItemHeaderStruct));
 		if (file.fail())
 		{
-			throw std::runtime_error("Failed to read item size.");
+			throw std::runtime_error("Failed to read item header.");
 		}
 
-		logger.Debug("itemHeaderStruct.ItemSize : " + std::to_string(itemHeaderStruct.ItemSize));
+		logger.Debug("itemHeaderStruct.ItemSize: " + std::to_string(itemHeaderStruct.ItemSize));
 
-		rawData.resize(itemHeaderStruct.ItemSize);
-		file.read(reinterpret_cast<char*>(rawData.data()), rawData.size());
+		// 데이터를 읽어 벡터에 저장
+		out.resize(itemHeaderStruct.ItemSize);
+		file.read(reinterpret_cast<char*>(out.data()), out.size());
 		if (file.fail())
 		{
 			throw std::runtime_error("Failed to read item data.");
 		}
 
-		ITEM item;
-		item.Deserialize(rawData);
-
-		
-		return item;
+		// 반환
+		return out;
 	}
+
 }
 
 #endif // STORAGE_FILE_H

@@ -10,6 +10,7 @@
 
 #include "common/frame/Frame.h"
 #include "common/log/Logger.h"
+#include "storage/manager/database/ItemFactory.h"
 #include "storage/manager/database/BaseItem.h"
 #include "storage/manager/database/StorageFile.h"
 
@@ -17,15 +18,15 @@
 
 namespace storage
 {
-	template <typename ITEM>
+	template <typename Data>
 	class StorageManager
 	{
 	public:
 		StorageManager(const std::string ip);
 		~StorageManager() = default;
 
-		void SaveItem(const ITEM& item);
-		void GetNextItem(OUT ITEM& item) const;
+		void SaveData(const Data& data);
+		void GetNextData(OUT Data& data) const;
 
 	private:
 		static logger::Logger logger;
@@ -34,21 +35,23 @@ namespace storage
 		std::string mStorageDirPath;
 		std::string mStorageFilePath;
 
-		mutable storage::StorageFile<ITEM> mStorageFile;
+		mutable StorageFile<BaseItem> mStorageFile;
+		std::unique_ptr<ItemFactory<Data>> mItemFactory; 
 
 	private:
-		mutable uint32_t mNextItemOffset;
+		mutable uint32_t mCurrentItemOffset;
 	};
 
-	template <typename ITEM>
-	logger::Logger StorageManager<ITEM>::logger("StorageManager");
+	template <typename Data>
+	logger::Logger StorageManager<Data>::logger("StorageManager");
 
-	template <typename ITEM>
-	StorageManager<ITEM>::StorageManager(const std::string ip) 
+	template <typename Data>
+	StorageManager<Data>::StorageManager(const std::string ip) 
 		: mId(ip) 
 		, mStorageDirPath(std::string(PROJECT_ROOT) + "/storage/" + ip)
-		, mStorageFilePath(mStorageDirPath + "/" + typeid(ITEM).name() + ".dat")
+		, mStorageFilePath(mStorageDirPath + "/" + typeid(Data).name() + ".dat")
 		, mStorageFile(mStorageFilePath)
+		, mItemFactory(std::move(ItemFactory<Data>::CreateFactory()))
 	{
 		if (std::filesystem::exists(mStorageFilePath) == false)
 		{
@@ -96,37 +99,40 @@ namespace storage
 
 		}
 
-		mNextItemOffset = mStorageFile.GetLastItemOffset();
+		mCurrentItemOffset = mStorageFile.GetLastItemOffset();
 	}
 		
-	template <typename ITEM>
-	void StorageManager<ITEM>::SaveItem(const ITEM& item)
+	template <typename Data>
+	void StorageManager<Data>::SaveData(const Data& data)
 	{
 		try
 		{
-			mStorageFile.AppendItem(item);
+			std::unique_ptr<BaseItem> item = mItemFactory->CreateItem(data);
+	
+			mStorageFile.AppendItem(*item);
 			logger.Info("Item saved successfully.");
 		}
 		catch (const std::exception& ex)
 		{
-			logger.Error(std::string("Error saving item: ") + ex.what());
+			logger.Error(std::string("Error saving data: ") + ex.what());
 			throw;
 		}
 	}
 
-	template <typename ITEM>
-	void StorageManager<ITEM>::GetNextItem(OUT ITEM& item) const
+	template <typename Data>
+	void StorageManager<Data>::GetNextData(OUT Data& data) const
 	{
 		try
 		{
-			logger.Debug("GetNextItem() mNextItemOffset: " + std::to_string(mNextItemOffset));
+			logger.Debug("GetNextItem() mCurrentItemOffset: " + std::to_string(mCurrentItemOffset));
 			logger.Debug("GetNextItem() mStorageFile.GetLastItemOffset: " + std::to_string(mStorageFile.GetLastItemOffset()));
-			if (mNextItemOffset != mStorageFile.GetLastItemOffset())
+			if (mCurrentItemOffset != mStorageFile.GetLastItemOffset())
 			{
-				item = mStorageFile.ReadItem(mNextItemOffset);
-				mNextItemOffset = mStorageFile.GetNextItemOffset(mNextItemOffset);
+				std::vector<uint8_t> binaryData = mStorageFile.ReadItem(mCurrentItemOffset);
+				data = mItemFactory->Deserialize(binaryData);
+				logger.Info("Next data retrieved successfully.");
 				
-				logger.Info("Next item retrieved successfully.");
+				mCurrentItemOffset = mStorageFile.GetNextItemOffset(mCurrentItemOffset);
 			}
 			else
 			{
@@ -136,7 +142,7 @@ namespace storage
 		}
 		catch (const std::exception& ex)
 		{
-			logger.Error(std::string("Error read item: ") + ex.what());
+			logger.Error(std::string("Error read data: ") + ex.what());
 			throw;
 		}
 	}

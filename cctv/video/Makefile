@@ -6,8 +6,8 @@ INCLUDES := -I$(PROJECT_ROOT) -DPROJECT_ROOT=\"$(PROJECT_ROOT)\"
 
 # 컴파일러와 플래그 설정
 CXX := g++
-CXXFLAGS := -std=c++17 $(shell pkg-config --cflags openssl)
-LDFLAGS = $(shell pkg-config --libs openssl)
+CXXFLAGS := -std=c++17 $(shell pkg-config --cflags openssl nlohmann_json)
+LDFLAGS = $(shell pkg-config --libs openssl nlohmann_json)
 
 # 소스 파일과 타겟 설정
 SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
@@ -16,6 +16,7 @@ SOURCES := $(PROJECT_ROOT)/common/log/Logger.cpp \
 		   $(PROJECT_ROOT)/common/frame/Frame.cpp \
 		   $(PROJECT_ROOT)/common/frame/Header.cpp \
 		   $(PROJECT_ROOT)/common/frame/Body.cpp \
+		   $(PROJECT_ROOT)/common/frame/GOP.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20.cpp \
 		   $(PROJECT_ROOT)/common/cipher/ChaCha20CipherAdapter.cpp \
 		   $(PROJECT_ROOT)/common/cipher/TlsClientHandler.cpp \

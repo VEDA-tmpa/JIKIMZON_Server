@@ -24,11 +24,10 @@ namespace viewer
 
 		while (true)
 		{
-			storage::H264Item outItem;
-			mStorageManager.GetNextItem(outItem);
+			frame::H264::GOP outGop;
+			mStorageManager.GetNextData(outGop);
 
-			std::vector<frame::Frame> gop = outItem.GetData();
-
+			std::vector<frame::Frame> gop = outGop.GetFrames();
 
 			for (int i = 0; i < gop.size(); ++i)
 			{
