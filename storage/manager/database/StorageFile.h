@@ -79,17 +79,16 @@ namespace storage
 		uint32_t GetNextItemOffset(uint32_t itemOffset) const;
 
 		void EnqueueItem(const ITEM& item);
-		std::vector<uint8_t> ReadItem(uint32_t itemOffset) const;
+		std::vector<uint8_t> ReadData(uint32_t itemOffset) const;
 
 		std::ofstream openOutFile();
-		std::ifstream openInFile();
+		std::ifstream openInFile() const ;
 
 	private:
-		uint32_t GetNextValidOffset(uint32_t offset, uint32_t size);
-		uint32_t GetItemSize(uint32_t offset);
-
-
 		uint64_t getFileSize();
+
+		void readWithWrapAround(std::ifstream& file, char* destination, uint32_t offset, uint32_t size, uint32_t maxOffset) const;
+    	void writeWithWrapAround(std::ofstream& file, const char* source, uint32_t offset, uint32_t size, uint32_t maxOffset);
 
 
 	private:
@@ -177,10 +176,43 @@ namespace storage
 	// 	}
 	// }
 
+	template <typename ITEM>
+	void StorageFile<ITEM>::readWithWrapAround(std::ifstream& file, char* destination, uint32_t offset, uint32_t size, uint32_t maxOffset) const
+	{
+		if (offset + size > maxOffset)
+		{
+			uint32_t firstPartSize = maxOffset - offset;
+			file.seekg(offset, std::ios::beg);
+			file.read(destination, firstPartSize);
 
+			file.seekg(0, std::ios::beg);
+			file.read(destination + firstPartSize, size - firstPartSize);
+		}
+		else
+		{
+			file.seekg(offset, std::ios::beg);
+			file.read(destination, size);
+		}
+	}
 
+	template <typename ITEM>
+	void StorageFile<ITEM>::writeWithWrapAround(std::ofstream& file, const char* source, uint32_t offset, uint32_t size, uint32_t maxOffset)
+	{
+		if (offset + size > maxOffset)
+		{
+			uint32_t firstPartSize = maxOffset - offset;
+			file.seekp(offset, std::ios::beg);
+			file.write(source, firstPartSize);
 
-
+			file.seekp(0, std::ios::beg);
+			file.write(source + firstPartSize, size - firstPartSize);
+		}
+		else
+		{
+			file.seekp(offset, std::ios::beg);
+			file.write(source, size);
+		}
+	}
 
 	template <typename ITEM>
 	StorageFile<ITEM>::StorageFile(const std::string filePath)
@@ -210,7 +242,16 @@ namespace storage
 	uint32_t StorageFile<ITEM>::GetFirstItemOffset() const
 	{
 		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
-		file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+		{
+			file.seekg(0, std::ios::beg);
+			file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+			if (!file)
+			{
+				throw std::runtime_error("Failed to read FileHeaderStruct from file");
+			}
+		}
+
+		logger.Debug("GetFirstItemOffset() mFileHeaderStruct.FirstItemOffset: " + std::to_string(mFileHeaderStruct.FirstItemOffset));
 
 		return mFileHeaderStruct.FirstItemOffset;
 	}
@@ -219,7 +260,16 @@ namespace storage
 	uint32_t StorageFile<ITEM>::GetLastItemOffset() const
 	{
 		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in | std::ios::out);
-		file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+		{
+			file.seekg(0, std::ios::beg);
+			file.read(reinterpret_cast<char*>(&mFileHeaderStruct), sizeof(FileHeaderStruct));
+			if (!file)
+			{
+				throw std::runtime_error("Failed to read FileHeaderStruct from file");
+			}
+		}
+			
+		logger.Debug("GetLastItemOffset() mFileHeaderStruct.LastItemOffset: " + std::to_string(mFileHeaderStruct.LastItemOffset));
 
 		return mFileHeaderStruct.LastItemOffset;
 	}
@@ -308,7 +358,6 @@ namespace storage
 		return nextItemOffset;
 	}
 
-
 	template <typename ITEM>
 	void StorageFile<ITEM>::EnqueueItem(const ITEM& item)
 	{
@@ -316,44 +365,221 @@ namespace storage
 		std::vector<uint8_t> serializedItem = item.Serialize();
 		uint32_t itemSize = serializedItem.size();
 
-		uint32_t writeOffset = (GetLastItemOffset() == INVALID_OFFSET) ? 0 : GetLastItemOffset();
-
-		if (writeOffset + itemSize > MAX_DATA_OFFSET) 
+		// 처음에 첫 번째 아이템과 마지막 아이템 오프셋을 처리
+		uint32_t writeOffset = 0;
+		if (GetFirstItemOffset() == INVALID_OFFSET && GetLastItemOffset() == INVALID_OFFSET) 
 		{
-			uint32_t firstPartSize = MAX_DATA_OFFSET - writeOffset;
+			// 첫 번째 아이템과 마지막 아이템 오프셋이 INVALID_OFFSET일 때 초기화
+			SetFirstItemOffset(0);
+			SetLastItemOffset(0);
+			std::cout << "First and Last item offsets are INVALID. Initializing to 0." << std::endl;
+		}
+		else if (GetFirstItemOffset() == 0 && GetLastItemOffset() == 0)
+		{
+			// 첫 번째 아이템과 마지막 아이템이 0일 때, 다음 아이템 오프셋 계산
+			writeOffset = GetNextItemOffset(GetLastItemOffset());
+			std::cout << "First and Last item offsets are 0. Calculating next write offset: " << writeOffset << std::endl;
+		}
+		else
+		{
+			// 첫 번째와 마지막 아이템이 존재하는 경우, writeOffset을 lastItemOffset 이후로 설정
+			writeOffset = GetNextItemOffset(GetLastItemOffset());
+		}
 
-			file.seekp(sizeof(FileHeaderStruct) + writeOffset, std::ios::beg);
+		uint32_t nextItemOffset = writeOffset;
+
+		// 덮어쓰기를 계속해서 확인
+		while (nextItemOffset + itemSize > MAX_DATA_OFFSET)
+		{
+			uint32_t firstPartSize = MAX_DATA_OFFSET - nextItemOffset;
+			std::cout << "Writing in two parts. First part size: " << firstPartSize << std::endl;
+
+			file.seekp(sizeof(FileHeaderStruct) + nextItemOffset, std::ios::beg);
 			file.write(reinterpret_cast<const char*>(serializedItem.data()), firstPartSize);
+			std::cout << "First part written to offset: " << nextItemOffset << std::endl;
 
 			file.seekp(sizeof(FileHeaderStruct), std::ios::beg);
 			file.write(reinterpret_cast<const char*>(serializedItem.data()) + firstPartSize, itemSize - firstPartSize);
-		}
-		else 
-		{
-			file.seekp(sizeof(FileHeaderStruct) + writeOffset, std::ios::beg);
-			file.write(reinterpret_cast<const char*>(serializedItem.data()), itemSize);
+			std::cout << "Second part written starting from offset: " << 0 << std::endl;
+
+			nextItemOffset = (nextItemOffset + itemSize) % MAX_DATA_OFFSET;
+			std::cout << "Next item offset after write: " << nextItemOffset << std::endl;
 		}
 
-		// 다음 아이템 위치로 writeOffset 갱신
-		writeOffset = (writeOffset + itemSize) % MAX_DATA_OFFSET;
-		SetLastItemOffset(writeOffset);
+		// 일반적인 데이터 쓰기
+		if (nextItemOffset + itemSize <= MAX_DATA_OFFSET)
+		{
+			file.seekp(sizeof(FileHeaderStruct) + nextItemOffset, std::ios::beg);
+			file.write(reinterpret_cast<const char*>(serializedItem.data()), itemSize);
+			nextItemOffset = (nextItemOffset + itemSize) % MAX_DATA_OFFSET;
+			std::cout << "Written data in a single block to offset: " << nextItemOffset << std::endl;
+		}
+
+		// 마지막 아이템의 오프셋 갱신
+		SetLastItemOffset(nextItemOffset);
+		std::cout << "Updated last item offset to: " << nextItemOffset << std::endl;
+
+		// 첫 번째 아이템 오프셋 갱신
+		if (GetFirstItemOffset() == INVALID_OFFSET) 
+		{
+			// 첫 번째 아이템 오프셋이 INVALID_OFFSET이라면, 현재 아이템의 오프셋을 첫 번째 아이템으로 설정
+			SetFirstItemOffset(nextItemOffset);
+			std::cout << "First item offset was INVALID. Setting it to next item offset: " << nextItemOffset << std::endl;
+		}
+		else if (nextItemOffset == writeOffset)
+		{
+			// 덮어쓰기 되는 경우, 첫 번째 아이템의 오프셋을 다시 설정
+			SetFirstItemOffset(nextItemOffset);
+			std::cout << "Overwriting occurred. First item offset updated to: " << nextItemOffset << std::endl;
+		}
+
+		// 첫 번째 아이템의 오프셋 확인
+		uint32_t firstItemOffset = GetFirstItemOffset();
+		std::cout << "First item offset: " << firstItemOffset << std::endl;
 	}
 
+
+
+// template <typename ITEM>
+// void StorageFile<ITEM>::EnqueueItem(const ITEM& item)
+// {
+// 	std::cout << "init " << std::endl;
+// 	GetFirstItemOffset();
+// 	GetLastItemOffset();
+
+//     std::ofstream file = openOutFile();
+//     std::vector<uint8_t> serializedItem = item.Serialize();
+//     uint32_t itemSize = serializedItem.size();
+
+//     uint32_t writeOffset = 0;
+// 	uint32_t itemOffset  = 0;
+//     // 첫 번째 아이템 오프셋과 마지막 아이템 오프셋을 확인
+//     if (GetFirstItemOffset() == INVALID_OFFSET && GetLastItemOffset() == INVALID_OFFSET) 
+//     {
+//         SetLastItemOffset(0);
+//         SetFirstItemOffset(0);
+//         std::cout << "First and Last item offsets are INVALID. Initializing to 0." << std::endl;
+// 		// goto aa;
+//     }
+//     else if (GetFirstItemOffset() == 0 && GetLastItemOffset() == 0)
+//     {
+//         writeOffset = GetNextItemOffset(GetLastItemOffset());
+//         std::cout << "First and Last item offsets are 0. Calculating next write offset: " << writeOffset << std::endl;
+// 		// goto aa;
+
+//     }
+// 	else {
+    
+// 		nextItemOffset = writeOffset;
+
+// 		// 덮어쓰기를 계속해서 확인
+// 		while (nextItemOffset + itemSize > MAX_DATA_OFFSET)
+// 		{
+// 			uint32_t firstPartSize = MAX_DATA_OFFSET - nextItemOffset;
+// 			std::cout << "Writing in two parts. First part size: " << firstPartSize << std::endl;
+
+// 			file.seekp(sizeof(FileHeaderStruct) + nextItemOffset, std::ios::beg);
+// 			file.write(reinterpret_cast<const char*>(serializedItem.data()), firstPartSize);
+// 			std::cout << "First part written to offset: " << nextItemOffset << std::endl;
+
+// 			file.seekp(sizeof(FileHeaderStruct), std::ios::beg);
+// 			file.write(reinterpret_cast<const char*>(serializedItem.data()) + firstPartSize, itemSize - firstPartSize);
+// 			std::cout << "Second part written starting from offset: " << 0 << std::endl;
+
+// 			nextItemOffset = (nextItemOffset + itemSize) % MAX_DATA_OFFSET;
+// 			std::cout << "Next item offset after write: " << nextItemOffset << std::endl;
+// 		}
+// 	}
+
+//     // 일반적인 데이터 쓰기
+//     if (writeOffset + itemSize <= MAX_DATA_OFFSET)
+//     {
+//         file.seekp(sizeof(FileHeaderStruct) + writeOffset, std::ios::beg);
+//         file.write(reinterpret_cast<const char*>(serializedItem.data()), itemSize);
+//         nextItemOffset = (writeOffset + itemSize) % MAX_DATA_OFFSET;
+//         std::cout << "Written data in a single block to offset: " << nextItemOffset << std::endl;
+//     }
+
+//     // 마지막 아이템의 오프셋 갱신
+//     SetLastItemOffset(writeOffset);
+//     std::cout << "Updated last item offset to: " << writeOffset << std::endl;
+
+//     // 첫 번째 아이템의 오프셋 갱신
+//     if (nextItemOffset == writeOffset)
+//     {
+//         SetFirstItemOffset(nextItemOffset);
+//         std::cout << "Overwriting occurred. First item offset updated to: " << nextItemOffset << std::endl;
+//     }
+
+//     GetFirstItemOffset();
+//     GetLastItemOffset();
+
+// }
+
+
+
+// template <typename ITEM>
+// void StorageFile<ITEM>::EnqueueItem(const ITEM& item)
+// {
+//     std::ofstream file = openOutFile();
+//     std::vector<uint8_t> serializedItem = item.Serialize();
+//     uint32_t itemSize = serializedItem.size();
+
+//     uint32_t writeOffset = (GetLastItemOffset() == INVALID_OFFSET) ? 0 : GetLastItemOffset();
+//     uint32_t firstItemOffset = GetFirstItemOffset(); // 첫 번째 아이템의 오프셋
+//     uint32_t nextItemOffset = writeOffset; // 다음 아이템의 오프셋
+
+//     // 덮어쓰기를 계속해서 확인
+//     while (nextItemOffset + itemSize > MAX_DATA_OFFSET)
+//     {
+//         // 덮어쓰는 영역을 확인하고, 다음 아이템으로 넘어가기
+//         uint32_t firstPartSize = MAX_DATA_OFFSET - nextItemOffset;
+//         file.seekp(sizeof(FileHeaderStruct) + nextItemOffset, std::ios::beg);
+//         file.write(reinterpret_cast<const char*>(serializedItem.data()), firstPartSize);
+
+//         file.seekp(sizeof(FileHeaderStruct), std::ios::beg);
+//         file.write(reinterpret_cast<const char*>(serializedItem.data()) + firstPartSize, itemSize - firstPartSize);
+
+//         nextItemOffset = (nextItemOffset + itemSize) % MAX_DATA_OFFSET;
+//     }
+
+//     // 일반적인 데이터 쓰기
+//     if (nextItemOffset + itemSize <= MAX_DATA_OFFSET)
+//     {
+//         file.seekp(sizeof(FileHeaderStruct) + nextItemOffset, std::ios::beg);
+//         file.write(reinterpret_cast<const char*>(serializedItem.data()), itemSize);
+//         nextItemOffset = (nextItemOffset + itemSize) % MAX_DATA_OFFSET;
+//     }
+
+//     // 마지막 아이템의 오프셋 갱신
+//     SetLastItemOffset(nextItemOffset);
+
+//     // 덮어쓴 후 첫 번째 아이템 갱신
+//     if (nextItemOffset >= firstItemOffset)
+//     {
+//         // 덮어썼다면, 첫 번째 아이템의 오프셋을 갱신
+//         SetFirstItemOffset(nextItemOffset);
+//     }
+
+// 	GetFirstItemOffset();
+// }
+
 	template <typename ITEM>
-	std::vector<uint8_t> StorageFile<ITEM>::ReadItem(uint32_t itemOffset) const
+	std::vector<uint8_t> StorageFile<ITEM>::ReadData(uint32_t itemOffset) const
 	{
+		std::cout << "itemOffset: " << itemOffset << " MAX_DATA_OFFSET: " << MAX_DATA_OFFSET << std::endl;
 		assert(itemOffset <= MAX_DATA_OFFSET);
 
 		std::ifstream file = openInFile();
 
 		ItemHeaderStruct headerStruct;
-		file.seekg(sizeof(FileHeaderStruct) + itemOffset | std::ios::beg);
+		file.seekg(sizeof(FileHeaderStruct) + itemOffset, std::ios::beg);
 		if (itemOffset + sizeof(ItemHeaderStruct) > MAX_DATA_OFFSET) 
 		{
 			uint32_t firstPartSize = MAX_DATA_OFFSET - itemOffset;
 			file.read(reinterpret_cast<char*>(&headerStruct), firstPartSize);
 
-			file.seekg(sizeof(FileHeaderStruct) + 0 | std::ios::beg);
+			file.seekg(sizeof(FileHeaderStruct) + 0, std::ios::beg);
 			file.read(reinterpret_cast<char*>(&headerStruct) + firstPartSize, sizeof(ItemHeaderStruct) - firstPartSize);
 		} 
 		else 
@@ -361,29 +587,26 @@ namespace storage
 			file.read(reinterpret_cast<char*>(&headerStruct), sizeof(ItemHeaderStruct));
 		}
 
-
-		std::vector<uint8_t> binaryItem;
-		binaryItem.reserve(sizeof(ItemHeaderStruct) + headerStruct.DataSize);
-
-		std::memcpy(binaryItem.data(), &headerStruct, sizeof(ItemHeaderStruct));
-
+		// 데이터 크기만큼 공간을 할당
+		std::vector<uint8_t> data(headerStruct.DataSize);
+		std::cout << "data.size() " << data.size() << std::endl;
 
 		uint32_t dataOffset = itemOffset + sizeof(ItemHeaderStruct);
 		if (dataOffset + headerStruct.DataSize > MAX_DATA_OFFSET) 
 		{
 			uint32_t firstPartSize = MAX_DATA_OFFSET - dataOffset;
-			file.read(reinterpret_cast<char*>(binaryItem.data() + sizeof(ItemHeaderStruct)), firstPartSize);
+			file.read(reinterpret_cast<char*>(data.data()), firstPartSize);
 
-			file.seekg(sizeof(FileHeaderStruct) + 0 | std::ios::beg);
-			file.read(reinterpret_cast<char*>(binaryItem.data() + sizeof(ItemHeaderStruct) + firstPartSize), headerStruct.DataSize - firstPartSize);
+			file.seekg(sizeof(FileHeaderStruct) + 0, std::ios::beg);
+			file.read(reinterpret_cast<char*>(data.data()) + firstPartSize, headerStruct.DataSize - firstPartSize);
 		} 
 		else 
 		{
-			file.seekg(sizeof(FileHeaderStruct) + dataOffset | std::ios::beg);
-			file.read(reinterpret_cast<char*>(binaryItem.data() + sizeof(ItemHeaderStruct)), headerStruct.DataSize);
+			file.seekg(sizeof(FileHeaderStruct) + dataOffset, std::ios::beg);
+			file.read(reinterpret_cast<char*>(data.data()), headerStruct.DataSize);
 		}
 
-		return binaryItem;
+		return data;
 	}
 
 	template <typename ITEM>
@@ -400,7 +623,7 @@ namespace storage
 	}
 
 	template <typename ITEM>
-	std::ifstream StorageFile<ITEM>::openInFile()
+	std::ifstream StorageFile<ITEM>::openInFile() const
 	{
 		std::ifstream file(mStorageFilePath, std::ios::binary | std::ios::in);
 		if (!file)

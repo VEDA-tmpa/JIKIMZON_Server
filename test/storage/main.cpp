@@ -4,6 +4,7 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <unistd.h>
 
 #include <nlohmann/json.hpp>
 
@@ -32,7 +33,7 @@ void test_concrete_size_json_n_save(int test_item_count)
 	std::string timestamp = "20241212_213705.707";
 
 	// JSON 객체 생성
-	for (int i = 0; i < test_item_count; ++i) 
+	for (int i = 0; i < test_item_count / 2; ++i) 
 	{
 		nlohmann::json json;
 		json = {
@@ -48,6 +49,34 @@ void test_concrete_size_json_n_save(int test_item_count)
 		};
 	
 		storage.SaveData(json);
+	}
+
+	usleep(1000000);
+	storage::StorageManager<nlohmann::json> storage2(testIp);
+	for (int i = test_item_count / 2; i < test_item_count; ++i) 
+	{
+
+		nlohmann::json json;
+		json = {
+			{"frameId", i},
+			{"timestamp", timestamp},
+			{"object", {
+				{"className", "plastic"},
+				{"height", 000},
+				{"width", 000},
+				{"x", 000},
+				{"y", 000}
+			}}
+		};
+	
+		storage.SaveData(json);
+
+
+
+		nlohmann::json outJson;
+		storage2.GetNextData(outJson);
+
+		std::cout << outJson.dump(4) << std::endl;
 	}
 }
 
@@ -89,7 +118,7 @@ int main()
 {
 	CleanUpTestFiles();
 	SetupTestFiles();
-	test_concrete_size_json_n_save(500);
+	test_concrete_size_json_n_save(6);
 
 	// CleanUpTestFiles();
 

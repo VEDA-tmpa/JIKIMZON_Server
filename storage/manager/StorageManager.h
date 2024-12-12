@@ -96,6 +96,7 @@ namespace storage
 
 		mCurrentItemOffset = mStorageFile.GetLastItemOffset();
 
+		logger.Info("mCurrentItemOffset: " + std::to_string(mCurrentItemOffset));
 		logger.Info("access storagePath: " + mStorageFilePath);
 	}
 		
@@ -125,8 +126,8 @@ namespace storage
 			logger.Debug("GetNextItem() mStorageFile.GetLastItemOffset: " + std::to_string(mStorageFile.GetLastItemOffset()));
 			if (mCurrentItemOffset != mStorageFile.GetLastItemOffset())
 			{
-				std::vector<uint8_t> binaryItem = mStorageFile.ReadItem(mCurrentItemOffset);
-				data = mItemFactory->Deserialize(binaryItem);
+				std::vector<uint8_t> binaryData = mStorageFile.ReadData(mCurrentItemOffset);
+				data = mItemFactory->Deserialize(binaryData);
 				logger.Info("Next data retrieved successfully.");
 				
 				mCurrentItemOffset = mStorageFile.GetNextItemOffset(mCurrentItemOffset);
