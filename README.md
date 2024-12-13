@@ -1,6 +1,11 @@
 # server
 
 ## build && run
+### 설정
+- `test/fixture/Fixture.cpp` 에서 cctv 서버의 ip, video port, json port로 설정
+- viewer 는 cctv와 동일한 port 들로 구성해둠
+
+### Makefile
 - `make buiild`
 - `make run`
 
