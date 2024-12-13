@@ -55,13 +55,8 @@ namespace storage
 		}
 
 	private:
-		// static logger::Logger logger;
-
 		nlohmann::json mJson;
 	};
-
-
-	// logger::Logger JsonItem::logger("JsonItem");
 }
 
 #endif // JSON_ITEM_H
