@@ -14,7 +14,7 @@ namespace cctv
 	public:
 		enum { JSON_DELIMITER = '|' };
 		
-		JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		JsonClient(const std::string& host, int port);
 		~JsonClient() = default;
 
 	protected:

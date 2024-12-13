@@ -7,8 +7,8 @@
 
 namespace viewer
 {
-	VideoServer::VideoServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-		: BaseServer(port, std::move(cipherHandler))
+	VideoServer::VideoServer(int port)
+		: BaseServer(port)
 		, mStorageManager(fixture::cctv1.ip)
 	{
 	}

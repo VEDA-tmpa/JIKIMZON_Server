@@ -17,7 +17,7 @@ namespace viewer
 		enum { PORT = 12345 };
 		
 		VideoServer() = delete;
-		VideoServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		VideoServer(int port);
 		~VideoServer() = default;
 
 	protected:

@@ -18,7 +18,7 @@ namespace cctv
 	class VideoClient : public tcp::BaseClient
 	{
 	public:
-		VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		VideoClient(const std::string& host, int port);
 		~VideoClient() = default;
 
 	protected:
@@ -28,8 +28,6 @@ namespace cctv
 		storage::StorageManager<frame::H264::GOP> mStorageManager;
 		
 		frame::Frame receiveFrame();
-
-		void decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted);
 	};
 }
 #endif /* VIDEO_CLIENT_H */

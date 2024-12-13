@@ -3,12 +3,11 @@
 #include "viewer/json/JsonServer.h"
 #include "common/frame/Frame.h"
 #include "test/fixture/Fixture.h"
-#include "common/cipher/ChaCha20.h"
 
 namespace viewer
 {
-	JsonServer::JsonServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-		: BaseServer(port, std::move(cipherHandler))
+	JsonServer::JsonServer(int port)
+		: BaseServer(port)
 		, mStorageManager(fixture::cctv1.ip)
 	{
 	}

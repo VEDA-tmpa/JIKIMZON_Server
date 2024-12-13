@@ -4,8 +4,8 @@ namespace cctv
 {
 	logger::Logger JsonClient::logger("JsonClient");
 
-	JsonClient::JsonClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-		: BaseClient(host, port, std::move(cipherHandler)) 
+	JsonClient::JsonClient(const std::string& host, int port)
+		: BaseClient(host, port) 
 		, mDataBuffer("")
 		, mStorageManager(host)
 	{

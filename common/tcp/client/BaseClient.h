@@ -15,7 +15,7 @@ namespace tcp
 	class BaseClient 
 	{
 	public:
-		BaseClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		BaseClient(const std::string& host, int port);
 		virtual ~BaseClient();
 
 		void Start();
@@ -32,8 +32,6 @@ namespace tcp
 		int mPort;
 		int mSocketFd;
 		bool mbClosed;
-
-		std::unique_ptr<cipher::ICiphable> mCipherHandler;
 
 	private:
 		void connectToServer();

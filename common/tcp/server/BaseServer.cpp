@@ -12,10 +12,9 @@ namespace tcp
 {
 	logger::Logger BaseServer::logger("BaseServer");
 
-	BaseServer::BaseServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
+	BaseServer::BaseServer(int port)
 		: mPort(port)
 		, mServerSocketFd(-1)
-		, mCipherHandler(std::move(cipherHandler))
 		, mTlsHandler(std::make_unique<cipher::TlsServerHandler>())
 	{
 		logger.Debug("port: " + std::to_string(port));

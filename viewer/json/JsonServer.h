@@ -17,7 +17,7 @@ namespace viewer
 		enum { PORT = 54321 };
 		
 		JsonServer() = delete;
-		JsonServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		JsonServer(int port);
 		~JsonServer() = default;
 
 	protected:

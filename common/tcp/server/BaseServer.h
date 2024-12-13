@@ -14,7 +14,7 @@ namespace tcp
 	{
 	public:		
 		BaseServer() = delete;
-		BaseServer(int port, std::unique_ptr<cipher::ICiphable> cipherHandler);
+		BaseServer(int port);
 		~BaseServer() = default;
 
 		void Start();
@@ -27,8 +27,7 @@ namespace tcp
 		int mPort;
 		int mServerSocketFd;
 
-		std::unique_ptr<cipher::ICiphable> mCipherHandler;
-		std::unique_ptr<cipher::TlsServerHandler> mTlsHandler; // TODO: 영향범위 부모클래스에서 처리하도록 수정해야함. 지금은 동작하도록 처리
+		std::unique_ptr<cipher::TlsServerHandler> mTlsHandler;
 
 	private:
 		enum { BACK_LOG = 3 };

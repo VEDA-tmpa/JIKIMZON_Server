@@ -7,12 +7,11 @@ namespace tcp
 {
 	logger::Logger BaseClient::logger("BaseClient");
 
-	BaseClient::BaseClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
+	BaseClient::BaseClient(const std::string& host, int port)
 		: mHost(host)
 		, mPort(port)
 		, mSocketFd(-1)
 		, mbClosed(true) 
-		, mCipherHandler(std::move(cipherHandler))
 		, mTlsHandler(std::make_unique<cipher::TlsClientHandler>())
 	{
 		logger.Debug("port: " + std::to_string(port));

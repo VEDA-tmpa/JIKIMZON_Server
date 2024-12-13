@@ -4,8 +4,8 @@
 
 namespace cctv
 {
-	VideoClient::VideoClient(const std::string& host, int port, std::unique_ptr<cipher::ICiphable> cipherHandler)
-		: BaseClient(host, port, std::move(cipherHandler)) 
+	VideoClient::VideoClient(const std::string& host, int port)
+		: BaseClient(host, port) 
 		, mStorageManager(host)
 	{
 	}
@@ -73,17 +73,9 @@ namespace cctv
 			throw std::runtime_error("Failed to receive body");
 		}
 
-		// // Body 복호화
-		// std::vector<uint8_t> outDecrypted;
-		// decryptBody(bodyBuffer, header.GetTimestamp(), outDecrypted);
-
 		// 4. Body 역직렬화 (Body가 0일 경우 처리하지 않음)
 		logger.Info("Body deserialize");
 		frame::Body body;
-		// if (bodyResult > 0)
-		// {
-		// 	body.Deserialize(outDecrypted);
-		// }
 		body.Deserialize(bodyBuffer);
 
 		// 5. Frame 객체 생성
@@ -91,13 +83,5 @@ namespace cctv
 		frame::Frame frame(header, body);
 
 		return frame;
-	}
-
-	void VideoClient::decryptBody(const std::vector<uint8_t>& data, const std::string& timestamp, std::vector<uint8_t>& OUT decrypted)
-	{
-		std::vector<uint8_t> nonce(12, 0x00);
-		std::copy(timestamp.end() - 12, timestamp.end(), nonce.begin());
-
-		mCipherHandler->Decrypt(data, decrypted, nonce);
 	}
 }
