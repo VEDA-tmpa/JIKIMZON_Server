@@ -28,13 +28,13 @@ viewer-json:
 # Run target: 빌드된 실행 파일 순차적으로 실행
 run:
 	@echo "Running cctv/video executable..."
-	$(PROJECT_ROOT)/cctv/video/main.out
+	$(PROJECT_ROOT)/cctv/video/main.out &
 	@echo "Running cctv/json executable..."
-	$(PROJECT_ROOT)/cctv/json/main.out
+	$(PROJECT_ROOT)/cctv/json/main.out &
 	@echo "Running viewer/video executable..."
-	$(PROJECT_ROOT)/viewer/video/main.out
+	$(PROJECT_ROOT)/viewer/video/main.out &
 	@echo "Running viewer/json executable..."
-	$(PROJECT_ROOT)/viewer/json/main.out
+	$(PROJECT_ROOT)/viewer/json/main.out &
 
 # Clean target: 하위 디렉토리의 clean 호출
 clean:
